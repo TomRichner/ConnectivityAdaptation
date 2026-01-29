@@ -52,9 +52,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# vector figure and data files
-*.fig
+# data files
 *.mat
-*.svg
 
-# raster figures are allowed. pdfs are allowed
+# all figs allowed for this manuscript
