@@ -1,0 +1,60 @@
+.venv
+
+# MATLAB autosave files
+*.asv
+
+# MATLAB temporary files
+*.m~
+
+# Simulink autosave files
+*.autosave
+*.slxc
+
+# Simulink cache files
+slprj/
+*.slxc
+
+# Code generation folders
+codegen/
+
+# MATLAB compiled files (MEX)
+*.mex*
+*.mexw64
+*.mexw32
+*.mexa64
+*.mexmaci64
+*.mexmaca64
+
+# MATLAB App Designer generated files
+*.mlapp~
+
+# MATLAB temporary variables
+matlab_crash_dump.*
+
+# Profiler output
+profile_results/
+
+# Build artifacts
+*.o
+*.obj
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor backup files
+*~
+*.swp
+*.swo
+
+# vector figure and data files
+*.fig
+*.mat
+*.svg
+
+# raster figures are allowed. pdfs are allowed
