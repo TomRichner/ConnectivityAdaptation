@@ -1,10 +1,15 @@
 close all; clear all; clc;
 setup_paths();
 
+% Derive project root from script location for portable paths
+script_path = fileparts(mfilename('fullpath'));
+project_root = fileparts(script_path);  % Go up from scripts/ to project root
+figs_root = fullfile(project_root, 'figs');
+
 set(groot, 'DefaultFigureColor', 'white');
 set(groot, 'DefaultAxesFontSize', 14);
 set(groot, 'DefaultTextFontSize', 14);
-set(groot, 'DefaultLineLineWidth', 1.25);
+set(groot, 'DefaultLineLineWidth', 1.0);
 set(groot, 'DefaultAxesLineWidth', 2);
 set(groot, 'DefaultAxesTitleFontWeight', 'normal');
 
@@ -30,7 +35,7 @@ note = 'SFA_only';
 n_a_E = 3; % three timeconstants of SFA
 n_b_E = 0; % no short-term synaptic depression
 
-save_dir = fullfile('/Users/richner.thomas/Desktop/local_code/FractionalResevoir/figs', 'results_review_revised', note);
+save_dir = fullfile(figs_root, 'srnn_comparison', note);
 fprintf('Running SRNN with u_ex_scale=%g, n_a_E=%d, n_b_E=%d, level_of_chaos=%g\n', u_ex_scale, n_a_E, n_b_E, level_of_chaos);
 clear_SRNN_persistent();
 [~, ~, params_1, lya_1, plot_data_1] = full_SRNN_run_SRNNModel(u_ex_scale, n_a_E, n_b_E, level_of_chaos, rng_seeds, save_dir, save_figs, save_workspace, note, time_config);
@@ -47,7 +52,7 @@ note = 'STD_and_SFA';
 n_a_E = 3;
 n_b_E = 1;
 
-save_dir = fullfile('/Users/richner.thomas/Desktop/local_code/FractionalResevoir/figs', 'results_review_revised', note);
+save_dir = fullfile(figs_root, 'srnn_comparison', note);
 fprintf('Running SRNN with u_ex_scale=%g, n_a_E=%d, n_b_E=%d, level_of_chaos=%g\n', u_ex_scale, n_a_E, n_b_E, level_of_chaos);
 clear_SRNN_persistent();
 [~, ~, params_4, lya_4, plot_data_4] = full_SRNN_run_SRNNModel(u_ex_scale, n_a_E, n_b_E, level_of_chaos, rng_seeds, save_dir, save_figs, save_workspace, note, time_config);
@@ -66,7 +71,7 @@ AddLetters2Plots(fig_handle, {'(a)', '(b)', '(c)', '(d)', '(e)', '(f)'}, 'FontSi
 ylim([-1.9 1.9]) % y limits of the local lyapunov exponent
 
 if save_figs
-    save_dir_combined = fullfile('/Users/richner.thomas/Desktop/local_code/FractionalResevoir/figs', 'results_review_revised');
+    save_dir_combined = fullfile(figs_root, 'srnn_comparison');
     save_name_base = 'combined_comparison';
 
     % Use the existing helper function
