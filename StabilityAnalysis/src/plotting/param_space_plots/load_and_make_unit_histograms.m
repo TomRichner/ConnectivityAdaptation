@@ -138,7 +138,7 @@ for m_idx = 1:length(metrics)
 
     % Create figure with matching dimensions
     fig = figure('Name', sprintf('%s Unit Histogram', metric), ...
-        'Position', [100, 100, 300 * num_conditions, 350]);
+        'Position', [100, 100, 300 * num_conditions, 300]);
 
     for c_idx = 1:num_conditions
         cond_name = condition_names{c_idx};
@@ -218,7 +218,7 @@ end
 %% Create colorbar figure for f values (same as beeswarm)
 if has_f_variation
     fig_cb = figure('Name', 'f Value Colorbar', ...
-        'Position', [500, 100, 150, 350]);
+        'Position', [500, 100, 150, 300]);
 
     ax_cb = axes(fig_cb);
 

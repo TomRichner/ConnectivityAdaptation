@@ -194,7 +194,7 @@ condition_titles = containers.Map(...
     {'No Adaptation', 'SFA Only', 'STD Only', 'SFA + STD'});
 
 fig = figure('Name', 'Mean Local LLE by Step', ...
-    'Position', [100, 100, 300 * num_conditions, 350]);
+    'Position', [100, 100, 300 * num_conditions, 300]);
 
 % Get colormap for f-value coloring (blue=low f, red=high f, gray middle)
 cmap_f = blue_gray_red_colormap(256);
@@ -352,7 +352,7 @@ fprintf('\nFigure saved to: %s\n', fig_dir);
 %% Create separate colorbar figure for f values
 if has_f_variation
     fig_cb = figure('Name', 'f Value Colorbar', ...
-        'Position', [500, 100, 150, 350]);
+        'Position', [500, 100, 150, 300]);
 
     % Create a dummy image to get a colorbar
     ax_cb = axes(fig_cb);

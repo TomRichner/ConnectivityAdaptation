@@ -17,8 +17,16 @@ clear all;
 clc;
 close all;
 
+%% Configuration
+save_figs = true;
+
 %% Setup paths
 setup_paths();
+
+% Derive project root from script location for portable paths
+script_path = fileparts(mfilename('fullpath'));
+project_root = fileparts(script_path);  % Go up from scripts/ to project root
+figs_root = fullfile(project_root, 'figs');
 
 %% Create ParamSpaceAnalysis object
 % Configure the analysis parameters
@@ -48,18 +56,15 @@ psa.add_grid_parameter('f', [0.4 0.6]);     % fraction of neurons that are E
 
 % Repetition index (creates unique network seeds per parameter combo)
 
-psa.add_grid_parameter('rep_idx', [1, 2]);
+psa.add_grid_parameter('reps', [1 2]); % this is to get multiple reps (reps = n_levels) at the same grid parameter combination.
 
 % Dynamics parameters (uncomment to include)
 % psa.add_grid_parameter('tau_d', [0.05, 0.2]);           % Dendritic time constant
-% psa.add_grid_parameter('u_ex_scale', [1.0, 3.0]);       % External input scaling
-
-% Adaptation parameters (uncomment to include)
-% psa.add_grid_parameter('c_E', [0.01, 0.5]);             % SFA strength
+% psa.add_grid_parameter('u_ex_scale', [0.1, 3.0]);       % External input scaling
 
 %% Configure model defaults (optional)
 % Set any SRNNModel properties that should be constant across all runs
-% Parameters tuned to edge-of-chaos from full_SRNN_run_SRNNModel.m
+% Parameters match to Fig_2_single_vs_dual_adaptation_example.m
 
 % Network architecture
 psa.model_defaults.n = N;                     % Number of neurons
@@ -151,6 +156,13 @@ fprintf('PSA object saved to: %s\n', save_file);
 load_and_make_unit_histograms(psa.output_dir);
 load_and_plot_lle_by_stim_period(psa.output_dir, 'transient_skip', 5, 'periods_to_plot', [0 1 1]);
 
+%% Save figures
+if save_figs
+    save_dir = fullfile(figs_root, 'fraction_excitatory_analysis');
+    save_some_figs_to_folder_2(save_dir, 'fraction_excitatory', [], {'fig', 'svg', 'png', 'jp2'});
+    fprintf('Figures saved to %s\n', save_dir);
+end
+
 %% Display summary
 fprintf('\n=== Parameter Space Analysis Summary ===\n');
 fprintf('Output directory: %s\n', psa.output_dir);
@@ -160,28 +172,5 @@ fprintf('Total combinations: %d^%d = %d\n', ...
     psa.n_levels, length(psa.grid_params), psa.n_levels^length(psa.grid_params));
 fprintf('Conditions: %s\n', strjoin(cellfun(@(c) c.name, psa.conditions, 'UniformOutput', false), ', '));
 
-%% Optional: Access results programmatically
-% Results are stored in psa.results structure:
-%
-%   psa.results.<condition_name>{config_idx}
-%
-% Each result contains:
-%   - success: boolean
-%   - config: struct with parameter values
-%   - config_idx: index in the grid
-%   - network_seed: RNG seed for W (same across conditions)
-%   - LLE: largest Lyapunov exponent
-%   - mean_rate: mean firing rate
-%
-% Example: Extract LLE values for 'sfa_only' condition:
-%
-%   results = psa.results.sfa_only;
-%   LLEs = cellfun(@(r) r.LLE, results(~cellfun(@isempty, results)));
-%   histogram(LLEs);
-
-%% Optional: Load results from a previous run
-% psa_loaded = ParamSpaceAnalysis();
-% psa_loaded.load_results('/path/to/param_space_...');
-% psa_loaded.plot('metric', 'LLE');
-
+%% Done
 fprintf('\nDone! Results saved to: %s\n', psa.output_dir);
