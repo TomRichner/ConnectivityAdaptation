@@ -43,7 +43,6 @@ model.n = 300;
 model.indegree = 100;
 model.f = 0.50; % fraction excitatory
 model.tau_d = 0.1; % seconds
-model.fs = 400; % Hz
 model.c_E = 0.25/3;
 
 % RMT tilde-notation parameters (Harris 2023)

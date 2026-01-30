@@ -1,4 +1,4 @@
-function load_and_plot_lle_by_stim_period(results_dir, options)
+function fig = load_and_plot_lle_by_stim_period(results_dir, options)
 % LOAD_AND_PLOT_LLE_BY_STIM_PERIOD Plot mean local LLE per stim step
 %
 % Usage:
@@ -200,6 +200,10 @@ fig = figure('Name', 'Mean Local LLE by Step', ...
 cmap_f = blue_gray_red_colormap(256);
 n_colors = size(cmap_f, 1);
 
+% Pre-allocate storage for p-values (for bracket annotations)
+p_values_per_condition = NaN(num_conditions, 1);
+ax_cell = cell(num_conditions, 1);  % Store axes handles
+
 for c_idx = 1:num_conditions
     cond_name = cond_names{c_idx};
     means_matrix = all_means{c_idx};
@@ -290,6 +294,22 @@ for c_idx = 1:num_conditions
     xtickangle(ax, 45);
     box(ax, 'off');
 
+    % Compute and store p-value for this condition
+    stim_cols = ~no_stim_pattern;
+    no_stim_cols = no_stim_pattern;
+    stim_means = mean(means_matrix(:, stim_cols), 2, 'omitnan');
+    no_stim_means = mean(means_matrix(:, no_stim_cols), 2, 'omitnan');
+    valid_pairs = ~isnan(stim_means) & ~isnan(no_stim_means);
+    stim_valid = stim_means(valid_pairs);
+    no_stim_valid = no_stim_means(valid_pairs);
+
+    if sum(valid_pairs) >= 2
+        [p_val, ~, ~] = signrank(stim_valid, no_stim_valid);
+        p_values_per_condition(c_idx) = p_val;
+    end
+
+    ax_cell{c_idx} = ax;  % Store axes handle
+
 end
 
 % Link y-axes for ALL conditions (same scale across all subplots)
@@ -335,17 +355,60 @@ end
 global_upper = max(global_ymax + global_padding, 0.05);
 global_lower = global_ymin - global_padding;
 
+% Increase upper padding to make room for bracket and p-value
+global_upper_with_bracket = global_upper + 0.15 * global_range;
+
 % Set ylim on one of the linked axes (will apply to all linked)
 if ~isempty(ax_handles)
-    ylim(ax_handles(1), [global_lower, global_upper]);
+    ylim(ax_handles(1), [global_lower, global_upper_with_bracket]);
 end
 
+%% Add significance brackets with p-values
+bracket_y = global_upper + 0.03 * global_range;  % Position bracket just above data
+vert_height = 0.03 * global_range;  % Height of vertical end caps
+text_y = bracket_y + 0.05 * global_range;  % Position text above bracket
+
+for c_idx = 1:num_conditions
+    ax = ax_cell{c_idx};
+    p_val = p_values_per_condition(c_idx);
+
+    if isnan(p_val)
+        continue;  % Skip if no valid p-value
+    end
+
+    hold(ax, 'on');
+
+    % Bracket x-positions (connect position 1 to position 2)
+    x_left = 1;
+    x_right = 2;
+
+    % Draw bracket as a single connected line with 4 points:
+    % bottom-left -> top-left -> top-right -> bottom-right
+    bracket_x = [x_left, x_left, x_right, x_right];
+    bracket_y_pts = [bracket_y - vert_height, bracket_y, bracket_y, bracket_y - vert_height];
+    plot(ax, bracket_x, bracket_y_pts, 'k-', 'LineWidth', 2.5, 'HandleVisibility', 'off');
+
+    % Format p-value in scientific notation with 2 sig figs
+    p_str = sprintf('p = %.2g', p_val);
+
+    % Add p-value text centered above bracket
+    text(ax, (x_left + x_right) / 2, text_y, p_str, ...
+        'HorizontalAlignment', 'center', ...
+        'VerticalAlignment', 'bottom', ...
+        'FontSize', 9, ...
+        'HandleVisibility', 'off');
+
+    hold(ax, 'off');
+end
+
+% Force render to ensure brackets are drawn before function returns
+drawnow;
 
 
 %% Create separate colorbar figure for f values
 if has_f_variation
     fig_cb = figure('Name', 'f Value Colorbar', ...
-        'Position', [500, 200, 100, 300]);
+        'Position', [500, 200, 300, 300]);
 
     % Create a dummy image to get a colorbar
     ax_cb = axes(fig_cb);
@@ -369,6 +432,57 @@ if has_f_variation
 
 end
 
-fprintf('\nDone!\n');
+%% Statistical tests: non-parametric paired t-test (stim vs no-stim)
+fprintf('\n=== Statistical Analysis: Stim vs No-Stim ===\n');
+
+for c_idx = 1:num_conditions
+    cond_name = cond_names{c_idx};
+    means_matrix = all_means{c_idx};
+
+    % Separate stim and no-stim columns
+    stim_cols = ~no_stim_pattern;
+    no_stim_cols = no_stim_pattern;
+
+    % Compute mean LLE across stim periods and no-stim periods for each sim
+    stim_means = mean(means_matrix(:, stim_cols), 2, 'omitnan');
+    no_stim_means = mean(means_matrix(:, no_stim_cols), 2, 'omitnan');
+
+    % Remove any NaN pairs
+    valid_pairs = ~isnan(stim_means) & ~isnan(no_stim_means);
+    stim_valid = stim_means(valid_pairs);
+    no_stim_valid = no_stim_means(valid_pairs);
+
+    n_pairs = sum(valid_pairs);
+
+    if n_pairs >= 2
+        % Wilcoxon signed-rank test (non-parametric paired test)
+        [p_value, ~, ~] = signrank(stim_valid, no_stim_valid);
+
+        % Cohen's d for paired samples: d = mean(diff) / std(diff)
+        differences = stim_valid - no_stim_valid;
+        cohens_d = mean(differences) / std(differences);
+
+        % Get display name
+        if condition_titles.isKey(cond_name)
+            display_name = condition_titles(cond_name);
+        else
+            display_name = strrep(cond_name, '_', ' ');
+        end
+
+        fprintf('%s (n=%d pairs):\n', display_name, n_pairs);
+        fprintf('  Wilcoxon signed-rank p-value: %.4g\n', p_value);
+        fprintf('  Cohen''s d: %.4f\n', cohens_d);
+        fprintf('  Median LLE difference (stim - no-stim): %.4f\n', ...
+            median(stim_valid) - median(no_stim_valid));
+        fprintf('  Mean stim LLE: %.4f, Mean no-stim LLE: %.4f\n', ...
+            mean(stim_valid), mean(no_stim_valid));
+        fprintf('\n');
+    else
+        fprintf('%s: Insufficient valid pairs (n=%d) for statistical test\n\n', ...
+            cond_name, n_pairs);
+    end
+end
+
+fprintf('Done!\n');
 end
 

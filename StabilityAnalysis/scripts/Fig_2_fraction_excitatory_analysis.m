@@ -56,7 +56,6 @@ default_tilde_val = 1 / sqrt(N * alpha * (2 - alpha));
 psa.add_grid_parameter('f', [0.4, 0.6]);     % fraction of neurons that are E
 
 % Repetition index (creates unique network seeds per parameter combo)
-
 psa.add_grid_parameter('reps', [1:5]); % repetitions at the same parameter combos
 
 % Dynamics parameters (uncomment to include)
@@ -74,7 +73,6 @@ psa.model_defaults.indegree = indegree;            % Sparse connectivity
 
 % Timing
 psa.model_defaults.T_range = [-15, 45];       % Match full_SRNN_run_SRNNModel timing
-psa.model_defaults.fs = 400;                  % Sampling frequency
 psa.model_defaults.tau_d = 0.1;               % Dendritic time constant
 
 % RMT tilde-parameters (Harris 2023)
@@ -154,8 +152,14 @@ fprintf('PSA object saved to: %s\n', save_file);
 %% Plot results
 % Generate histograms showing metric distributions across the parameter space
 
-load_and_make_unit_histograms(psa.output_dir);
-load_and_plot_lle_by_stim_period(psa.output_dir, 'transient_skip', 3, 'periods_to_plot', [0 1 1]);
+[~, figs_hist] = load_and_make_unit_histograms(psa.output_dir, 'Metrics', {'br','lle'});
+fig_paired_swarm = load_and_plot_lle_by_stim_period(psa.output_dir, 'transient_skip', 3, 'periods_to_plot', [0 1 1]);
+
+% Combine all 3 figures (each with 4 subplots) into a 3x4 layout
+fig_combined = concatenate_figs([figs_hist, fig_paired_swarm], 'vertical', 'HideTitlesAfterFirstRow', true);
+% Add letters to subplots (a) through (l) for 3x4 = 12 subplots
+drawnow
+AddLetters2Plots(fig_combined, {'(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)', '(i)', '(j)', '(k)', '(l)'}, 'FontSize', 14, 'FontWeight', 'normal', 'HShift', -0.03, 'VShift', -0.04);
 
 %% Save figures
 if save_figs

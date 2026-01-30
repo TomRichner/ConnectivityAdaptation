@@ -741,8 +741,15 @@ classdef ParamSpaceAnalysis < handle
                     r_I = model.plot_data.r.I;
                     all_rates = [r_E(:); r_I(:)];
                     result.mean_rate = mean(all_rates(~isnan(all_rates)));
+
+                    % Extract mean synaptic output (b .* r)
+                    br_E = model.plot_data.br.E;
+                    br_I = model.plot_data.br.I;
+                    all_br = [br_E(:); br_I(:)];
+                    result.mean_synaptic_output = mean(all_br(~isnan(all_br)));
                 else
                     result.mean_rate = NaN;
+                    result.mean_synaptic_output = NaN;
                 end
 
             catch ME
@@ -756,6 +763,7 @@ classdef ParamSpaceAnalysis < handle
                 result.run_duration = toc(run_start);
                 result.LLE = NaN;
                 result.mean_rate = NaN;
+                result.mean_synaptic_output = NaN;
 
                 if verbose_local
                     fprintf('  ERROR config %d: %s\n', job.config_idx, ME.message);

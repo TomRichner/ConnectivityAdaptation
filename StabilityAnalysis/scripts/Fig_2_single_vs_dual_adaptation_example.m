@@ -16,7 +16,7 @@ set(groot, 'DefaultAxesTitleFontWeight', 'normal');
 % NOTE: This script sets global MATLAB figure defaults that persist for the session.
 % Run `reset(groot)` afterward to restore factory defaults if needed.
 
-save_figs = false;
+save_figs = true;
 save_workspace = false;
 
 level_of_chaos = 1.0; % gamma from somplinsky
@@ -76,6 +76,6 @@ if save_figs
     save_name_base = 'combined_comparison';
 
     % Use the existing helper function
-    save_some_figs_to_folder_2(save_dir_combined, save_name_base, [fig_handle.Number], {'fig', 'svg', 'png'});
+    save_some_figs_to_folder_2(save_dir_combined, save_name_base, [fig_handle.Number], {'fig', 'svg', 'png', 'jp2'});
     fprintf('Combined plot saved to %s\n', save_dir_combined);
 end

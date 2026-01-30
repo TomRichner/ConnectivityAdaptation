@@ -1,35 +1,40 @@
-function psa = load_and_make_unit_histograms(results_dir, normalize_mode)
+function [psa, fig_handles] = load_and_make_unit_histograms(results_dir, options)
 % LOAD_AND_MAKE_UNIT_HISTOGRAMS Load PSA results and create unit histograms colored by f
 %
 % Usage:
 %   psa = load_and_make_unit_histograms('/path/to/param_space_...')
-%   psa = load_and_make_unit_histograms('/path/to/param_space_...', 'probability')
+%   psa = load_and_make_unit_histograms('/path/to/param_space_...', 'NormalizeMode', 'probability')
+%   [psa, figs] = load_and_make_unit_histograms(..., 'Metrics', {'lle', 'r', 'br'})
 %
 % This function:
 %   1. Loads the PSA object from psa_object.mat if available
 %   2. Otherwise, creates a new object and loads results
 %   3. Checks if consolidation is needed (temp_batches exists)
 %   4. Consolidates if necessary
-%   5. Plots LLE and mean_rate distributions using unit_histogram_patch
-%      with f-value coloring (same colormap as load_and_plot_lle_by_stim_period)
+%   5. Plots distributions using unit_histogram_patch with f-value coloring
 %
 % Input:
-%   results_dir    - Path to a param_space_* output directory
-%   normalize_mode - Optional: 'count' (default) or 'probability'
+%   results_dir   - Path to a param_space_* output directory
+%
+% Options:
+%   NormalizeMode - 'count' (default) or 'probability'
+%   Metrics       - Cell array of metrics to plot: 'lle', 'r', 'br'
+%                   (default: {'lle', 'r'})
 %
 % Output:
-%   psa - The loaded ParamSpaceAnalysis object
+%   psa         - The loaded ParamSpaceAnalysis object
+%   fig_handles - Array of figure handles (one per metric)
 %
 % See also: ParamSpaceAnalysis, unit_histogram_patch, load_and_plot_lle_by_stim_period
 
-if nargin < 1 || isempty(results_dir)
-    error('load_and_make_unit_histograms:NoInput', ...
-        'Please provide the path to a param_space_* results directory.');
+arguments
+    results_dir (1,:) char
+    options.NormalizeMode (1,:) char {mustBeMember(options.NormalizeMode, {'count', 'probability'})} = 'count'
+    options.Metrics (1,:) cell = {'lle', 'r'}
 end
 
-if nargin < 2 || isempty(normalize_mode)
-    normalize_mode = 'count';
-end
+normalize_mode = options.NormalizeMode;
+metrics_to_plot = lower(options.Metrics);
 
 if ~exist(results_dir, 'dir')
     error('load_and_make_unit_histograms:NotFound', ...
@@ -72,10 +77,39 @@ condition_titles = containers.Map(...
     {'no_adaptation', 'sfa_only', 'std_only', 'sfa_and_std'}, ...
     {'No Adaptation', 'SFA Only', 'STD Only', 'SFA + STD'});
 
-%% Extract all data with f values for both metrics
-metrics = {'LLE', 'mean_rate'};
-metric_labels = {'\lambda_1', 'Mean Firing Rate'};
-metric_ranges = {[-1.5, 1.5], [0, 1]};
+%% Build metric configuration based on options
+% Map short names to internal metric names and display properties
+metric_config = struct();
+metric_config.lle = struct('field', 'LLE', 'label', '\lambda_1', 'range', [-2.3, 1.5], 'inf_both', true);
+metric_config.r = struct('field', 'mean_rate', 'label', 'Mean Firing Rate', 'range', [0, 1], 'inf_both', false);
+metric_config.br = struct('field', 'mean_synaptic_output', 'label', 'Mean Synaptic Output', 'range', [0, 1], 'inf_both', false);
+
+% Filter to requested metrics
+metrics = {};
+metric_labels = {};
+metric_ranges = {};
+metric_fields = {};
+metric_inf_both = {};
+for i = 1:length(metrics_to_plot)
+    key = metrics_to_plot{i};
+    if isfield(metric_config, key)
+        cfg = metric_config.(key);
+        metrics{end+1} = cfg.field; %#ok<AGROW>
+        metric_labels{end+1} = cfg.label; %#ok<AGROW>
+        metric_ranges{end+1} = cfg.range; %#ok<AGROW>
+        metric_fields{end+1} = cfg.field; %#ok<AGROW>
+        metric_inf_both{end+1} = cfg.inf_both; %#ok<AGROW>
+    else
+        warning('load_and_make_unit_histograms:UnknownMetric', ...
+            'Unknown metric: %s. Valid options: lle, r, br', key);
+    end
+end
+
+if isempty(metrics)
+    error('load_and_make_unit_histograms:NoValidMetrics', ...
+        'No valid metrics specified.');
+end
+
 n_bins = 25;  % Match psa.plot
 
 % Precompute bin edges for each metric (consistent across conditions)
@@ -84,10 +118,10 @@ for m_idx = 1:length(metrics)
     hist_range = metric_ranges{m_idx};
     % Compute edges using linspace, add inf bins for overflow
     edges = linspace(hist_range(1), hist_range(2), n_bins + 1);
-    if strcmpi(metrics{m_idx}, 'LLE')
-        edges = [-inf, edges, inf];  % Both sides for LLE
+    if metric_inf_both{m_idx}
+        edges = [-inf, edges, inf];  % Both sides for LLE-like metrics
     else
-        edges = [edges, inf];  % Just upper overflow for mean_rate
+        edges = [edges, inf];  % Just upper overflow for rate-like metrics
     end
     metric_edges{m_idx} = edges;
 end
@@ -130,6 +164,7 @@ end
 cmap_f = blue_gray_red_colormap(256);
 
 %% Create figures for each metric
+fig_handles = gobjects(1, length(metrics));  % Pre-allocate figure handle array
 
 for m_idx = 1:length(metrics)
     metric = metrics{m_idx};
@@ -207,7 +242,7 @@ for m_idx = 1:length(metrics)
         xlabel(ax, metric_label);
 
         % Set x limits based on metric
-        xlim(ax, metric_range);
+        xlim(ax, 1.05.*metric_range);
     end
 
     % Link y-axes
@@ -215,13 +250,14 @@ for m_idx = 1:length(metrics)
     ax_handles = findobj(fig, 'Type', 'Axes');
     linkaxes(ax_handles, 'y');
 
-
+    % Store figure handle
+    fig_handles(m_idx) = fig;
 end
 
 %% Create colorbar figure for f values (same as beeswarm)
 if has_f_variation
     fig_cb = figure('Name', 'f Value Colorbar', ...
-        'Position', [500, 200, 100, 300]);
+        'Position', [500, 200, 300, 300]);
 
     ax_cb = axes(fig_cb);
 
