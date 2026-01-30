@@ -71,7 +71,7 @@ if strcmpi(Lya_method, 'benettin')
     % Plot local Lyapunov exponent (already filtered if filter_local_lya=true)
     if plot_local
         colors = lines(1);  % Use first color (blue) for consistency
-        plot(lya_results.t_lya, lya_results.local_lya, 'Color', colors(1,:))
+        plot(lya_results.t_lya, lya_results.local_lya, 'Color', colors(1,:), 'LineWidth', 1.25)
         hold on
         plot_started = true;
         legend_entries{end+1} = 'Local LLE';

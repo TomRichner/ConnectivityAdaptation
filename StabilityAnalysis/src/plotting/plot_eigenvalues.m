@@ -61,8 +61,8 @@ axis off;
 
 % Add manual reference lines at Re=0 and Im=0
 hold on;
-h_x = plot(x_lim, [0, 0], 'k');
-h_y = plot([0, 0], y_lim, 'k');
+h_x = plot(x_lim, [0, 0], 'k', 'LineWidth', 1.25);
+h_y = plot([0, 0], y_lim, 'k', 'LineWidth', 1.25);
 
 % Move reference lines to bottom layer
 uistack([h_x, h_y], 'bottom');

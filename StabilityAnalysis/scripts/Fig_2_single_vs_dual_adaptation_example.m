@@ -9,9 +9,12 @@ figs_root = fullfile(project_root, 'figs');
 set(groot, 'DefaultFigureColor', 'white');
 set(groot, 'DefaultAxesFontSize', 14);
 set(groot, 'DefaultTextFontSize', 14);
-set(groot, 'DefaultLineLineWidth', 1.0);
+set(groot, 'DefaultLineLineWidth', 0.75);
 set(groot, 'DefaultAxesLineWidth', 2);
 set(groot, 'DefaultAxesTitleFontWeight', 'normal');
+
+% NOTE: This script sets global MATLAB figure defaults that persist for the session.
+% Run `reset(groot)` afterward to restore factory defaults if needed.
 
 save_figs = false;
 save_workspace = false;

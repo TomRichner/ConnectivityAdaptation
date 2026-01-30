@@ -140,9 +140,6 @@ psa.store_local_lya_dt = 0.1;                 % Time resolution for local_lya (s
 
 psa.run();
 
-% Copy this script to the output directory for reproducibility
-copyfile([mfilename('fullpath') '.m'], psa.output_dir);
-
 %% Save the PSA object
 save_file = fullfile(psa.output_dir, 'psa_object.mat');
 save(save_file, 'psa');

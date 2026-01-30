@@ -237,7 +237,7 @@ W_I = full(model.W(:, params.I_indices));
 W_I_nonzero = W_I(W_I ~= 0);
 
 all_weights = [W_E_nonzero(:); W_I_nonzero(:)];
-n_bins = 30;
+n_bins = 50;
 bin_edges = linspace(min(all_weights), max(all_weights), n_bins + 1);
 
 hold on;
@@ -247,10 +247,26 @@ hold off;
 
 xlabel('Weight');
 ylabel('Count');
-legend('E', 'I', 'Location', 'northeast');
+lg = legend('E', 'I', 'Location', 'northeast');
+lg.Position(1) = lg.Position(1) + 0.08;  % Move legend further right
 legend boxoff;
 set(gca, 'Color', 'none');
 box off;
+
+% Add mu_tilde markers on x-axis (shifted by E_W)
+ax = gca;
+y_bottom = ax.YLim(1);
+tick_height = 0.02 * diff(ax.YLim);  % Tick height as fraction of y range
+mu_E_pos = model.mu_E_tilde + model.E_W;
+mu_I_pos = model.mu_I_tilde + model.E_W;
+% hold on; % ticks for mu_e and mu_i might be confusing with -0.25 and 0.25
+% plot([mu_E_pos, mu_E_pos], [y_bottom, y_bottom + tick_height], 'k-', 'LineWidth', 1.25, 'HandleVisibility', 'off');
+% plot([mu_I_pos, mu_I_pos], [y_bottom, y_bottom + tick_height], 'k-', 'LineWidth', 1.25, 'HandleVisibility', 'off');
+% hold off;
+text(mu_E_pos, y_bottom, '$\tilde{\mu}_E$', 'Interpreter', 'latex', ...
+    'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 10);
+text(mu_I_pos, y_bottom, '$\tilde{\mu}_I$', 'Interpreter', 'latex', ...
+    'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 10);
 
 %% Compute and plot J_eff at J_times (using W's color limits)
 fprintf('Computing J_eff at %d time points...\n', length(J_times));
