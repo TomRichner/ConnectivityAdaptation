@@ -151,8 +151,7 @@ fprintf('PSA object saved to: %s\n', save_file);
 %% Plot results
 % Generate histograms showing metric distributions across the parameter space
 
-psa.plot('metric', 'LLE');
-psa.plot('metric', 'mean_rate');
+load_and_make_unit_histograms(psa.output_dir);
 load_and_plot_lle_by_stim_period(psa.output_dir, 'transient_skip', 5, 'periods_to_plot', [0 1 1]);
 
 %% Display summary

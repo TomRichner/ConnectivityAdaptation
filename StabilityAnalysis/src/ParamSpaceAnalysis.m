@@ -295,7 +295,7 @@ classdef ParamSpaceAnalysis < handle
 
             % Create figure
             fig = figure('Name', sprintf('%s Distribution', metric), ...
-                'Position', [100, 100, 300 * num_conditions, 300]);
+                'Position', [100, 100, 300 * num_conditions, 350]);
 
             for c_idx = 1:num_conditions
                 cond_name = condition_names{c_idx};
