@@ -55,4 +55,7 @@ Thumbs.db
 # data files
 *.mat
 
+*.fig
+*.svg
+
 # all figs allowed for this manuscript
