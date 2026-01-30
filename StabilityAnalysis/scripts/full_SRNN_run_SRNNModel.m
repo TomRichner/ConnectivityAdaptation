@@ -41,20 +41,20 @@ model = SRNNModel();
 % Network architecture (explicitly set for hand-tuning)
 model.n = 300;
 model.indegree = 100;
-model.f = 0.5;
-model.tau_d = 0.1;
-model.fs = 200;
+model.f = 0.50; % fraction excitatory
+model.tau_d = 0.1; % seconds
+model.fs = 400; % Hz
 model.c_E = 0.25/3;
 
 % RMT tilde-notation parameters (Harris 2023)
 % Default val gives R=1: 1 / sqrt(n * alpha * (2 - alpha)) where alpha = indegree/n
 alpha = model.indegree / model.n;
 default_tilde_val = 1 / sqrt(model.n * alpha * (2 - alpha));
-model.mu_E_tilde = 3.5*default_tilde_val;
-model.mu_I_tilde = -3.5*default_tilde_val;
-model.sigma_E_tilde = default_tilde_val/1;
-model.sigma_I_tilde = default_tilde_val/1;
-model.E_W = -0.5 / sqrt(model.n * alpha * (2 - alpha));
+model.mu_E_tilde = 3.5*default_tilde_val; % mean excitatory connection weight
+model.mu_I_tilde = -3.5*default_tilde_val; % mean inhibitory connection weight
+model.sigma_E_tilde = default_tilde_val/1; % mean excitatory weight standard deviation
+model.sigma_I_tilde = default_tilde_val/1;% mean inhibitory weight standard deviation
+model.E_W = -0.5 / sqrt(model.n * alpha * (2 - alpha)); % imbalance, inhibitory stronger than excitatory
 % model.zrs_mode = 'Partial_SZRS';  % ZRS mode: 'none', 'ZRS', 'SZRS', 'Partial_SZRS'
 model.zrs_mode = 'none';
 

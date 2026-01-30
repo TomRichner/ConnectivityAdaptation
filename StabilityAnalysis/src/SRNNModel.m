@@ -63,7 +63,7 @@ classdef SRNNModel < handle
 
     %% Simulation Settings Properties
     properties
-        fs = 200                    % Sampling frequency (Hz)
+        fs = 400                    % Sampling frequency (Hz)
         T_range = [0, 50]           % Simulation time interval [start, end]
         T_plot                      % Plotting time interval (defaults to T_range)
         ode_solver = @ode45         % ODE solver function handle
@@ -91,7 +91,8 @@ classdef SRNNModel < handle
     properties
         store_full_state = false    % Whether to keep full S_out in memory
         store_decimated_state = true % Whether to keep decimated plot data
-        plot_deci = 20              % Decimation factor for plotting
+        plot_deci                   % Decimation factor for plotting (computed from fs/plot_freq if not set)
+        plot_freq = 10              % Target plotting frequency (Hz)
     end
 
     %% RMT Dependent Properties (computed from tilde parameters)
@@ -151,6 +152,11 @@ classdef SRNNModel < handle
                 else
                     warning('SRNNModel:UnknownProperty', 'Unknown property: %s', varargin{i});
                 end
+            end
+
+            % Compute plot_deci from fs and plot_freq if not explicitly set
+            if isempty(obj.plot_deci)
+                obj.plot_deci = round(obj.fs / obj.plot_freq);
             end
         end
     end
@@ -304,7 +310,7 @@ classdef SRNNModel < handle
             dt = 1 / obj.fs;
             if isempty(obj.ode_opts)
                 jac_wrapper = @(t, S) compute_Jacobian_fast(S, params);
-                obj.ode_opts = odeset('RelTol', 1e-8, 'AbsTol', 1e-8, 'MaxStep', dt, 'Jacobian', jac_wrapper);
+                obj.ode_opts = odeset('RelTol', 1e-9, 'AbsTol', 1e-9, 'MaxStep', dt, 'Jacobian', jac_wrapper);
             end
 
             % Define RHS function using closure (avoids OOP overhead)

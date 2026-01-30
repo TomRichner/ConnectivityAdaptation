@@ -53,7 +53,7 @@ alpha = indegree / N;
 default_tilde_val = 1 / sqrt(N * alpha * (2 - alpha));
 
 % psa.add_grid_parameter('E_W', [-2 2] .* default_tilde_val);  % Mean offset (scaled by 1/sqrt(n))
-psa.add_grid_parameter('f', [0.4 0.6]);     % fraction of neurons that are E
+psa.add_grid_parameter('f', [0.4, 0.6]);     % fraction of neurons that are E
 
 % Repetition index (creates unique network seeds per parameter combo)
 
@@ -74,7 +74,7 @@ psa.model_defaults.indegree = indegree;            % Sparse connectivity
 
 % Timing
 psa.model_defaults.T_range = [-15, 45];       % Match full_SRNN_run_SRNNModel timing
-psa.model_defaults.fs = 200;                  % Sampling frequency
+psa.model_defaults.fs = 400;                  % Sampling frequency
 psa.model_defaults.tau_d = 0.1;               % Dendritic time constant
 
 % RMT tilde-parameters (Harris 2023)
@@ -155,7 +155,7 @@ fprintf('PSA object saved to: %s\n', save_file);
 % Generate histograms showing metric distributions across the parameter space
 
 load_and_make_unit_histograms(psa.output_dir);
-load_and_plot_lle_by_stim_period(psa.output_dir, 'transient_skip', 5, 'periods_to_plot', [0 1 1]);
+load_and_plot_lle_by_stim_period(psa.output_dir, 'transient_skip', 3, 'periods_to_plot', [0 1 1]);
 
 %% Save figures
 if save_figs

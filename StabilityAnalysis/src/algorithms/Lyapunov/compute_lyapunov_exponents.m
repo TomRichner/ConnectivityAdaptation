@@ -49,9 +49,16 @@ else
     lya_dt = 0.1;
 end
 
+
+lya_dt_vs_dt_factor = lya_dt/dt; % should be an integer multiple.  lya_dt should be 3*dt or more.  This is the number of steps before rescaling
+
 % Check lya_dt is a nice multiple of dt
-if abs(round(lya_dt/dt) - lya_dt/dt) > 1e-11
-    error('lya_dt must be a multiple of dt');
+if abs(round(lya_dt_vs_dt_factor) - lya_dt_vs_dt_factor) > 1e-11
+    error(['lya_dt must be a multiple of dt. lya_dt_vs_dt_factor = ' num2str(lya_dt_vs_dt_factor)']);
+end
+
+if lya_dt_vs_dt_factor < 3
+    error(['lya_dt must be 3*dt or more. lya_dt_vs_dt_factor = ' num2str(lya_dt_vs_dt_factor) ' Increase fs or increase lyda_dt'])
 end
 
 lya_fs = 1 / lya_dt;

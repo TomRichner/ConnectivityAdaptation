@@ -45,6 +45,7 @@ classdef ParamSpaceAnalysis < handle
         note = ''                   % Optional note for folder naming
         store_local_lya = false     % Whether to store decimated local Lyapunov time series
         store_local_lya_dt = 0.1    % Time resolution for stored local_lya (seconds)
+        use_parallel = true         % Whether to use parfor (requires Parallel Computing Toolbox)
     end
 
     %% Results (SetAccess = private)
@@ -610,6 +611,7 @@ classdef ParamSpaceAnalysis < handle
             s.note = obj.note;
             s.store_local_lya = obj.store_local_lya;
             s.store_local_lya_dt = obj.store_local_lya_dt;
+            s.use_parallel = obj.use_parallel;
 
             % Results Properties (private)
             s.results = obj.results;
@@ -652,6 +654,7 @@ classdef ParamSpaceAnalysis < handle
                 if isfield(s, 'note'), obj.note = s.note; end
                 if isfield(s, 'store_local_lya'), obj.store_local_lya = s.store_local_lya; end
                 if isfield(s, 'store_local_lya_dt'), obj.store_local_lya_dt = s.store_local_lya_dt; end
+                if isfield(s, 'use_parallel'), obj.use_parallel = s.use_parallel; end
 
                 % Results Properties (private) - need to set via internal assignment
                 if isfield(s, 'results'), obj.results = s.results; end
@@ -664,6 +667,99 @@ classdef ParamSpaceAnalysis < handle
             else
                 % Object was saved directly (already a ParamSpaceAnalysis)
                 obj = s;
+            end
+        end
+
+        function result = run_single_job(job, model_defaults_local, grid_params_local, ...
+                verbose_local, store_local_lya_local, store_local_lya_dt_local)
+            % RUN_SINGLE_JOB Execute a single simulation job
+            % Extracted to allow use with both parfor and for loops
+
+            run_start = tic;
+
+            try
+                % Build model arguments
+                model_args = { ...
+                    'n_a_E', job.condition.n_a_E, ...
+                    'n_b_E', job.condition.n_b_E, ...
+                    'rng_seeds', [job.network_seed, job.network_seed + 1] ...
+                    };
+
+                % Add grid parameters
+                for p_idx = 1:length(grid_params_local)
+                    pname = grid_params_local{p_idx};
+                    model_args = [model_args, {pname, job.config.(pname)}]; %#ok<AGROW>
+                end
+
+                % Add model defaults (don't override grid params or condition params)
+                default_fields = fieldnames(model_defaults_local);
+                for d_idx = 1:length(default_fields)
+                    fname = default_fields{d_idx};
+                    if ~ismember(fname, grid_params_local) && ...
+                            ~strcmp(fname, 'n_a_E') && ~strcmp(fname, 'n_b_E')
+                        model_args = [model_args, {fname, model_defaults_local.(fname)}]; %#ok<AGROW>
+                    end
+                end
+
+                % Create and run model
+                model = SRNNModel(model_args{:});
+                model.build();
+                model.run();
+
+                % Extract results
+                result = struct();
+                result.success = true;
+                result.config = job.config;
+                result.config_idx = job.config_idx;
+                result.condition_name = job.condition.name;
+                result.network_seed = job.network_seed;
+                result.run_duration = toc(run_start);
+
+                % Extract LLE
+                if ~isempty(model.lya_results) && isfield(model.lya_results, 'LLE')
+                    result.LLE = model.lya_results.LLE;
+                else
+                    result.LLE = NaN;
+                end
+
+                % Extract decimated local Lyapunov time series if requested
+                if store_local_lya_local && ~isempty(model.lya_results)
+                    if isfield(model.lya_results, 'local_lya') && isfield(model.lya_results, 't_lya')
+                        current_lya_dt = model.lya_results.lya_dt;
+                        deci_factor = max(1, round(store_local_lya_dt_local / current_lya_dt));
+
+                        % Decimate local_lya and t_lya
+                        result.local_lya = model.lya_results.local_lya(1:deci_factor:end);
+                        result.t_lya = model.lya_results.t_lya(1:deci_factor:end);
+                        result.local_lya_dt = current_lya_dt * deci_factor;
+                    end
+                end
+
+                % Extract mean firing rate
+                if ~isempty(model.plot_data) && isfield(model.plot_data, 'r')
+                    r_E = model.plot_data.r.E;
+                    r_I = model.plot_data.r.I;
+                    all_rates = [r_E(:); r_I(:)];
+                    result.mean_rate = mean(all_rates(~isnan(all_rates)));
+                else
+                    result.mean_rate = NaN;
+                end
+
+            catch ME
+                result = struct();
+                result.success = false;
+                result.error_message = ME.message;
+                result.config = job.config;
+                result.config_idx = job.config_idx;
+                result.condition_name = job.condition.name;
+                result.network_seed = job.network_seed;
+                result.run_duration = toc(run_start);
+                result.LLE = NaN;
+                result.mean_rate = NaN;
+
+                if verbose_local
+                    fprintf('  ERROR config %d: %s\n', job.config_idx, ME.message);
+                end
             end
         end
     end
@@ -776,108 +872,36 @@ classdef ParamSpaceAnalysis < handle
                     end
                 end
 
-                % Extract values for parfor
+                % Extract values for parfor/for loop
                 model_defaults_local = obj.model_defaults;
                 grid_params_local = obj.grid_params;
                 verbose_local = obj.verbose;
                 store_local_lya_local = obj.store_local_lya;
                 store_local_lya_dt_local = obj.store_local_lya_dt;
 
-                % Run parfor
+                % Determine execution mode
+                run_parallel = obj.use_parallel && canUseParallelPool;
+
+                if obj.use_parallel && ~canUseParallelPool && batch_idx == 1
+                    warning('ParamSpaceAnalysis:NoParallelPool', ...
+                        'Parallel pool not available. Falling back to sequential execution.');
+                end
+
+                % Run simulation loop
                 parallel_results = cell(total_jobs, 1);
                 batch_start = tic;
 
-                parfor j = 1:total_jobs
-                    job = jobs{j};
-                    run_start = tic;
-
-                    try
-                        % Build model arguments
-                        model_args = { ...
-                            'n_a_E', job.condition.n_a_E, ...
-                            'n_b_E', job.condition.n_b_E, ...
-                            'rng_seeds', [job.network_seed, job.network_seed + 1] ...
-                            };
-
-                        % Add grid parameters
-                        for p_idx = 1:length(grid_params_local)
-                            pname = grid_params_local{p_idx};
-                            model_args = [model_args, {pname, job.config.(pname)}];
-                        end
-
-                        % Add model defaults (don't override grid params or condition params)
-                        default_fields = fieldnames(model_defaults_local);
-                        for d_idx = 1:length(default_fields)
-                            fname = default_fields{d_idx};
-                            if ~ismember(fname, grid_params_local) && ...
-                                    ~strcmp(fname, 'n_a_E') && ~strcmp(fname, 'n_b_E')
-                                model_args = [model_args, {fname, model_defaults_local.(fname)}];
-                            end
-                        end
-
-                        % Create and run model
-                        model = SRNNModel(model_args{:});
-                        model.build();
-                        model.run();
-
-                        % Extract results
-                        result = struct();
-                        result.success = true;
-                        result.config = job.config;
-                        result.config_idx = job.config_idx;
-                        result.condition_name = job.condition.name;
-                        result.network_seed = job.network_seed;
-                        result.run_duration = toc(run_start);
-
-                        % Extract LLE
-                        if ~isempty(model.lya_results) && isfield(model.lya_results, 'LLE')
-                            result.LLE = model.lya_results.LLE;
-                        else
-                            result.LLE = NaN;
-                        end
-
-                        % Extract decimated local Lyapunov time series if requested
-                        if store_local_lya_local && ~isempty(model.lya_results)
-                            if isfield(model.lya_results, 'local_lya') && isfield(model.lya_results, 't_lya')
-                                current_lya_dt = model.lya_results.lya_dt;
-                                deci_factor = max(1, round(store_local_lya_dt_local / current_lya_dt));
-
-                                % Decimate local_lya and t_lya
-                                result.local_lya = model.lya_results.local_lya(1:deci_factor:end);
-                                result.t_lya = model.lya_results.t_lya(1:deci_factor:end);
-                                result.local_lya_dt = current_lya_dt * deci_factor;  % Actual resolution after decimation
-                            end
-                        end
-
-                        % Extract mean firing rate
-                        if ~isempty(model.plot_data) && isfield(model.plot_data, 'r')
-                            r_E = model.plot_data.r.E;
-                            r_I = model.plot_data.r.I;
-                            all_rates = [r_E(:); r_I(:)];
-                            result.mean_rate = mean(all_rates(~isnan(all_rates)));
-                        else
-                            result.mean_rate = NaN;
-                        end
-
-                        parallel_results{j} = result;
-
-                    catch ME
-                        result = struct();
-                        result.success = false;
-                        result.error_message = ME.message;
-                        result.config = job.config;
-                        result.config_idx = job.config_idx;
-                        result.condition_name = job.condition.name;
-                        result.network_seed = job.network_seed;
-                        result.run_duration = toc(run_start);
-                        result.LLE = NaN;
-                        result.mean_rate = NaN;
-
-                        parallel_results{j} = result;
-
-                        if verbose_local
-                            fprintf('  ERROR job %d: %s\n', j, ME.message);
-                        end
+                if run_parallel
+                    parfor j = 1:total_jobs
+                        parallel_results{j} = ParamSpaceAnalysis.run_single_job(...
+                            jobs{j}, model_defaults_local, grid_params_local, ...
+                            verbose_local, store_local_lya_local, store_local_lya_dt_local);
+                    end
+                else
+                    for j = 1:total_jobs
+                        parallel_results{j} = ParamSpaceAnalysis.run_single_job(...
+                            jobs{j}, model_defaults_local, grid_params_local, ...
+                            verbose_local, store_local_lya_local, store_local_lya_dt_local);
                     end
                 end
 
