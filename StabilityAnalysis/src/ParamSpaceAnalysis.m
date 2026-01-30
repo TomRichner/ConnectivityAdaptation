@@ -28,6 +28,8 @@ classdef ParamSpaceAnalysis < handle
         n_levels = 8                % Number of levels per grid parameter
         conditions                  % Cell array of condition structs
         integer_params = {'n', 'indegree', 'n_a_E', 'n_a_I', 'n_b_E', 'n_b_I'}
+        reps                        % Repetition index for multiple runs per grid point
+        explicit_vectors = struct() % Struct: param_name -> explicit vector (when length > 2)
     end
 
     %% Model Default Properties
@@ -101,14 +103,9 @@ classdef ParamSpaceAnalysis < handle
                     'param_name must be a string or char array');
             end
 
-            if ~isnumeric(param_range) || length(param_range) ~= 2
+            if ~isnumeric(param_range) || length(param_range) < 2
                 error('ParamSpaceAnalysis:InvalidInput', ...
-                    'param_range must be a 2-element numeric array [min, max]');
-            end
-
-            if param_range(2) < param_range(1)
-                error('ParamSpaceAnalysis:InvalidInput', ...
-                    'param_range(2) must be >= param_range(1)');
+                    'param_range must be a numeric array with at least 2 elements');
             end
 
             % Add to grid_params if not already present
@@ -116,11 +113,32 @@ classdef ParamSpaceAnalysis < handle
                 obj.grid_params{end+1} = param_name;
             end
 
-            obj.param_ranges.(param_name) = param_range;
-
-            if obj.verbose
-                fprintf('Added grid parameter: %s, range: [%.3g, %.3g]\n', ...
-                    param_name, param_range(1), param_range(2));
+            if length(param_range) == 2
+                % Range mode: [min, max] -> will use n_levels
+                if param_range(2) < param_range(1)
+                    error('ParamSpaceAnalysis:InvalidInput', ...
+                        'param_range(2) must be >= param_range(1)');
+                end
+                obj.param_ranges.(param_name) = param_range;
+                % Remove from explicit_vectors if previously set
+                if isfield(obj.explicit_vectors, param_name)
+                    obj.explicit_vectors = rmfield(obj.explicit_vectors, param_name);
+                end
+                if obj.verbose
+                    fprintf('Added grid parameter: %s, range: [%.3g, %.3g] (n_levels=%d)\n', ...
+                        param_name, param_range(1), param_range(2), obj.n_levels);
+                end
+            else
+                % Explicit vector mode: use values directly
+                obj.explicit_vectors.(param_name) = param_range;
+                % Remove from param_ranges if previously set
+                if isfield(obj.param_ranges, param_name)
+                    obj.param_ranges = rmfield(obj.param_ranges, param_name);
+                end
+                if obj.verbose
+                    fprintf('Added grid parameter: %s, explicit vector with %d values\n', ...
+                        param_name, length(param_range));
+                end
             end
         end
 
@@ -580,6 +598,7 @@ classdef ParamSpaceAnalysis < handle
             s.n_levels = obj.n_levels;
             s.conditions = obj.conditions;
             s.integer_params = obj.integer_params;
+            s.explicit_vectors = obj.explicit_vectors;
 
             % Model Default Properties (public)
             s.model_defaults = obj.model_defaults;
@@ -621,6 +640,7 @@ classdef ParamSpaceAnalysis < handle
                 if isfield(s, 'n_levels'), obj.n_levels = s.n_levels; end
                 if isfield(s, 'conditions'), obj.conditions = s.conditions; end
                 if isfield(s, 'integer_params'), obj.integer_params = s.integer_params; end
+                if isfield(s, 'explicit_vectors'), obj.explicit_vectors = s.explicit_vectors; end
 
                 % Model Default Properties (public)
                 if isfield(s, 'model_defaults'), obj.model_defaults = s.model_defaults; end
@@ -669,12 +689,18 @@ classdef ParamSpaceAnalysis < handle
 
             for i = 1:n_params
                 param_name = obj.grid_params{i};
-                param_range = obj.param_ranges.(param_name);
 
-                if ismember(param_name, obj.integer_params)
-                    obj.param_vectors{i} = round(linspace(param_range(1), param_range(2), obj.n_levels));
+                if isfield(obj.explicit_vectors, param_name)
+                    % Use explicit vector directly
+                    obj.param_vectors{i} = obj.explicit_vectors.(param_name);
                 else
-                    obj.param_vectors{i} = linspace(param_range(1), param_range(2), obj.n_levels);
+                    % Generate from range using n_levels
+                    param_range = obj.param_ranges.(param_name);
+                    if ismember(param_name, obj.integer_params)
+                        obj.param_vectors{i} = round(linspace(param_range(1), param_range(2), obj.n_levels));
+                    else
+                        obj.param_vectors{i} = linspace(param_range(1), param_range(2), obj.n_levels);
+                    end
                 end
             end
 

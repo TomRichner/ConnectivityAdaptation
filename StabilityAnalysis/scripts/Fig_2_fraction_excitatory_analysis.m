@@ -12,6 +12,7 @@
 %   - Batched execution with resume capability
 %
 % See also: ParamSpaceAnalysis, SRNNModel, SensitivityAnalysis
+clear
 
 clear all;
 clc;
@@ -36,7 +37,7 @@ figs_root = fullfile(project_root, 'figs');
 psa = ParamSpaceAnalysis(...
     'n_levels', 5, ...          % Number of levels per parameter
     'batch_size', 25, ...       % Configs per batch (for checkpointing)
-    'note', 'test_refactor', ...         % Optional note for folder naming
+    'note', 'test_reps', ...         % Optional note for folder naming
     'verbose', true ...         % Print progress during execution
     );
 
@@ -56,7 +57,7 @@ psa.add_grid_parameter('f', [0.4 0.6]);     % fraction of neurons that are E
 
 % Repetition index (creates unique network seeds per parameter combo)
 
-psa.add_grid_parameter('reps', [1 2]); % this is to get multiple reps (reps = n_levels) at the same grid parameter combination.
+psa.add_grid_parameter('reps', [1:5]); % repetitions at the same parameter combos
 
 % Dynamics parameters (uncomment to include)
 % psa.add_grid_parameter('tau_d', [0.05, 0.2]);           % Dendritic time constant
@@ -73,7 +74,7 @@ psa.model_defaults.indegree = indegree;            % Sparse connectivity
 
 % Timing
 psa.model_defaults.T_range = [-15, 45];       % Match full_SRNN_run_SRNNModel timing
-psa.model_defaults.fs = 100;                  % Sampling frequency
+psa.model_defaults.fs = 200;                  % Sampling frequency
 psa.model_defaults.tau_d = 0.1;               % Dendritic time constant
 
 % RMT tilde-parameters (Harris 2023)
@@ -161,6 +162,13 @@ if save_figs
     save_dir = fullfile(figs_root, 'fraction_excitatory_analysis');
     save_some_figs_to_folder_2(save_dir, 'fraction_excitatory', [], {'fig', 'svg', 'png', 'jp2'});
     fprintf('Figures saved to %s\n', save_dir);
+
+    % Write data source info to figure folder for reproducibility
+    data_source_file = fullfile(save_dir, 'data_source.txt');
+    fid = fopen(data_source_file, 'w');
+    fprintf(fid, 'Figures generated from data in:\n%s\n', psa.output_dir);
+    fclose(fid);
+    fprintf('Data source info saved to %s\n', data_source_file);
 end
 
 %% Display summary

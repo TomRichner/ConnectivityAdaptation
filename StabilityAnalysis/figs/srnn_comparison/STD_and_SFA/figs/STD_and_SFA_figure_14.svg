@@ -5,7 +5,7 @@
 <title>Qt SVG Document</title>
 <desc>MATLAB, The MathWorks, Inc. Version 25.2.0.3042426 R2025b Update 1</desc>
 <defs>
-<pattern id="fillPattern37_" x="204" y="28" width="11" height="138" patternUnits="userSpaceOnUse" >
+<pattern id="fillPattern68_" x="204" y="28" width="11" height="138" patternUnits="userSpaceOnUse" >
 <image xlink:href="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAsAAACKCAYAAAB8QLBbAAAACXBIWXMAAAsTAAALEwEAmpwYAAABF0lEQVRYhe2X3Q7CIAyFWcPe/4G3gBcGw0r/wIFG682MO19XT04btuUQcjB+YgB4fitXURzj9RcBasUCxIsJQBYjyCZ+VQYwOdFWViC6DQa60ToE2d0AGLEOPY4Xvx2kbusIaFKQAJYGac0MImj2DDI9tuL1M0hAM2dwKEgm6/ad7ZGvTPRoFxOAL3ObmIB+Z5kzkAdJFzPAnwbJTwUGYMs5218QUpIF9f14nnrFApjETRtaO01lDSDb4CCxZwypf7DbugLFlGxOXCp3W6dBbM8UdK91NdQfpG7r6seZxBp0n3UY6gvSmhnUIA8SK9agiUE6DllcQ98cpDXLvIYWLHOqR1GsAR/eSH4qoAA/FZjFGPJlPhykB7amCizKfV6sAAAAAElFTkSuQmCC" x="0" y="0" width="11" height="138" />
 </pattern>
 </defs>
@@ -20,7 +20,7 @@ font-family=".AppleSystemUIFont" font-size="13" font-weight="400" font-style="no
 <polyline fill="none" vector-effect="none" points="215,166 215,28 " />
 </g>
 
-<g fill="url(#fillPattern37_)" stroke="none" transform="matrix(0.5,0,0,0.5,-100.5,-8.75)"
+<g fill="url(#fillPattern68_)" stroke="none" transform="matrix(0.5,0,0,0.5,-100.5,-8.75)"
 font-family=".AppleSystemUIFont" font-size="13" font-weight="400" font-style="normal" 
 >
 <path vector-effect="none" fill-rule="evenodd" d="M204,166 L215,166 L215,28 L204,28 L204,166"/>

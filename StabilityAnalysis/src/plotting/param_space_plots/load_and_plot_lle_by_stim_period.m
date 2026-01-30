@@ -267,7 +267,7 @@ for c_idx = 1:num_conditions
         'MarkerSize', 0.9, ...
         'LineWidth', 0.75, ...
         'Labels', step_labels_filtered, ...
-        'Alpha', 0.7, ...
+        'Alpha', 1, ...
         'SortStyle', 'hex', ...
         'ShowYAxis', (c_idx == 1));
 
@@ -340,19 +340,12 @@ if ~isempty(ax_handles)
     ylim(ax_handles(1), [global_lower, global_upper]);
 end
 
-%% Save figure
-fig_dir = fullfile(results_dir, 'figures');
-if ~exist(fig_dir, 'dir')
-    mkdir(fig_dir);
-end
-saveas(fig, fullfile(fig_dir, 'lle_by_stim_period.png'));
-saveas(fig, fullfile(fig_dir, 'lle_by_stim_period.fig'));
-fprintf('\nFigure saved to: %s\n', fig_dir);
+
 
 %% Create separate colorbar figure for f values
 if has_f_variation
     fig_cb = figure('Name', 'f Value Colorbar', ...
-        'Position', [500, 100, 150, 300]);
+        'Position', [500, 200, 100, 300]);
 
     % Create a dummy image to get a colorbar
     ax_cb = axes(fig_cb);
@@ -366,16 +359,14 @@ if has_f_variation
     % Configure axes
     ax_cb.XTick = [];
     ax_cb.YDir = 'normal';
-    ylabel(ax_cb, 'f (Fraction Excitatory)', 'FontSize', 12);
+    ax_cb.XColor = 'none';  % Hide x-axis completely
+    ylabel(ax_cb, 'fraction excitatory', 'FontSize', 12);
     box(ax_cb, 'off');
 
     % Set aspect ratio
-    pbaspect(ax_cb, [0.3 1 1]);
+    pbaspect(ax_cb, [0.1 1 1]);
 
-    % Save colorbar figure
-    saveas(fig_cb, fullfile(fig_dir, 'lle_by_stim_period_colorbar.png'));
-    saveas(fig_cb, fullfile(fig_dir, 'lle_by_stim_period_colorbar.fig'));
-    fprintf('Colorbar figure saved to: %s\n', fig_dir);
+
 end
 
 fprintf('\nDone!\n');

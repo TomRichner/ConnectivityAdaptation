@@ -43,7 +43,7 @@ model.n = 300;
 model.indegree = 100;
 model.f = 0.5;
 model.tau_d = 0.1;
-model.fs = 100;
+model.fs = 200;
 model.c_E = 0.25/3;
 
 % RMT tilde-notation parameters (Harris 2023)

@@ -1,8 +1,9 @@
-function psa = load_and_make_unit_histograms(results_dir)
+function psa = load_and_make_unit_histograms(results_dir, normalize_mode)
 % LOAD_AND_MAKE_UNIT_HISTOGRAMS Load PSA results and create unit histograms colored by f
 %
 % Usage:
 %   psa = load_and_make_unit_histograms('/path/to/param_space_...')
+%   psa = load_and_make_unit_histograms('/path/to/param_space_...', 'probability')
 %
 % This function:
 %   1. Loads the PSA object from psa_object.mat if available
@@ -13,7 +14,8 @@ function psa = load_and_make_unit_histograms(results_dir)
 %      with f-value coloring (same colormap as load_and_plot_lle_by_stim_period)
 %
 % Input:
-%   results_dir - Path to a param_space_* output directory
+%   results_dir    - Path to a param_space_* output directory
+%   normalize_mode - Optional: 'count' (default) or 'probability'
 %
 % Output:
 %   psa - The loaded ParamSpaceAnalysis object
@@ -23,6 +25,10 @@ function psa = load_and_make_unit_histograms(results_dir)
 if nargin < 1 || isempty(results_dir)
     error('load_and_make_unit_histograms:NoInput', ...
         'Please provide the path to a param_space_* results directory.');
+end
+
+if nargin < 2 || isempty(normalize_mode)
+    normalize_mode = 'count';
 end
 
 if ~exist(results_dir, 'dir')
@@ -124,10 +130,6 @@ end
 cmap_f = blue_gray_red_colormap(256);
 
 %% Create figures for each metric
-fig_dir = fullfile(results_dir, 'figures');
-if ~exist(fig_dir, 'dir')
-    mkdir(fig_dir);
-end
 
 for m_idx = 1:length(metrics)
     metric = metrics{m_idx};
@@ -177,7 +179,7 @@ for m_idx = 1:length(metrics)
                 'Axes', ax, ...
                 'Colormap', cmap_f, ...
                 'CLim', [f_min, f_max], ...
-                'Normalize', 'probability', ...
+                'Normalize', normalize_mode, ...
                 'EdgeColor', 'none');
 
             % Add stability reference line for LLE
@@ -196,7 +198,11 @@ for m_idx = 1:length(metrics)
         end
 
         if c_idx == 1
-            ylabel(ax, 'Probability');
+            if strcmpi(normalize_mode, 'probability')
+                ylabel(ax, 'Probability');
+            else
+                ylabel(ax, 'Count');
+            end
         end
         xlabel(ax, metric_label);
 
@@ -209,16 +215,13 @@ for m_idx = 1:length(metrics)
     ax_handles = findobj(fig, 'Type', 'Axes');
     linkaxes(ax_handles, 'y');
 
-    % Save figure
-    saveas(fig, fullfile(fig_dir, sprintf('%s_unit_histogram.png', metric)));
-    saveas(fig, fullfile(fig_dir, sprintf('%s_unit_histogram.fig', metric)));
-    fprintf('Figure saved: %s_unit_histogram.png\n', metric);
+
 end
 
 %% Create colorbar figure for f values (same as beeswarm)
 if has_f_variation
     fig_cb = figure('Name', 'f Value Colorbar', ...
-        'Position', [500, 100, 150, 300]);
+        'Position', [500, 200, 100, 300]);
 
     ax_cb = axes(fig_cb);
 
@@ -231,16 +234,14 @@ if has_f_variation
     % Configure axes
     ax_cb.XTick = [];
     ax_cb.YDir = 'normal';
-    ylabel(ax_cb, 'f (Fraction Excitatory)', 'FontSize', 12);
+    ax_cb.XColor = 'none';  % Hide x-axis completely
+    ylabel(ax_cb, 'fraction excitatory', 'FontSize', 12);
     box(ax_cb, 'off');
 
     % Set aspect ratio
-    pbaspect(ax_cb, [0.3 1 1]);
+    pbaspect(ax_cb, [0.1 1 1]);
 
-    % Save colorbar figure
-    saveas(fig_cb, fullfile(fig_dir, 'unit_histogram_colorbar.png'));
-    saveas(fig_cb, fullfile(fig_dir, 'unit_histogram_colorbar.fig'));
-    fprintf('Colorbar figure saved: unit_histogram_colorbar.png\n');
+
 end
 
 fprintf('\nDone!\n');

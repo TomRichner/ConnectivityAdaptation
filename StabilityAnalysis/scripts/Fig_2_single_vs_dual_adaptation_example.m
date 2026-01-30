@@ -7,7 +7,7 @@ project_root = fileparts(script_path);  % Go up from scripts/ to project root
 figs_root = fullfile(project_root, 'figs');
 
 set(groot, 'DefaultFigureColor', 'white');
-set(groot, 'DefaultAxesFontSize', 14);
+set(groot, 'DefaultAxesFontSizfs', 14);
 set(groot, 'DefaultTextFontSize', 14);
 set(groot, 'DefaultLineLineWidth', 0.75);
 set(groot, 'DefaultAxesLineWidth', 2);

@@ -74,7 +74,8 @@ classdef SRNNModel < handle
     properties
         input_config                % Struct with stimulus parameters
         u_ex_scale = 1.0            % Scaling factor for external input
-        rng_seeds = [1 2]    % RNG seeds [network, stimulus, etc]
+        rng_seeds = [1 2]           % RNG seeds [network, stimulus, etc]
+        reps = 1                    % Repetition index (used by ParamSpaceAnalysis)
     end
 
     %% Lyapunov Settings Properties
@@ -303,7 +304,7 @@ classdef SRNNModel < handle
             dt = 1 / obj.fs;
             if isempty(obj.ode_opts)
                 jac_wrapper = @(t, S) compute_Jacobian_fast(S, params);
-                obj.ode_opts = odeset('RelTol', 1e-7, 'AbsTol', 1e-7, 'MaxStep', dt, 'Jacobian', jac_wrapper);
+                obj.ode_opts = odeset('RelTol', 1e-8, 'AbsTol', 1e-8, 'MaxStep', dt, 'Jacobian', jac_wrapper);
             end
 
             % Define RHS function using closure (avoids OOP overhead)
