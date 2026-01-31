@@ -84,11 +84,11 @@ S = [a_E(:); a_I(:); b_E(:); b_I(:); x(:)]
 ```
 
 where:
-- `a_E`: E adaptation variables (n_E × n_a_E → flattened)
-- `a_I`: I adaptation variables (n_I × n_a_I → flattened)
-- `b_E`: E STD variables (n_E × n_b_E → flattened)
-- `b_I`: I STD variables (n_I × n_b_I → flattened)
-- `x`: Dendritic states for all neurons (n × 1)
+- `a_E`: E adaptation variables (n_E x n_a_E, flattened)
+- `a_I`: I adaptation variables (n_I x n_a_I, flattened)
+- `b_E`: E STD variables (n_E x n_b_E, flattened)
+- `b_I`: I STD variables (n_I x n_b_I, flattened)
+- `x`: Dendritic states for all neurons (n x 1)
 
 ### Equation Implementation in `dynamics_fast()`
 
@@ -173,10 +173,10 @@ W = S .* W_dense;         % S: sparse binary mask
 ```
 
 where:
-- `A` is an N × N Gaussian random matrix (mean 0, variance 1)
-- `D = diag([σ̃_E, ..., σ̃_E, σ̃_I, ..., σ̃_I])` encodes population variance
-- `M = u * v'` is the rank-1 mean structure with `v = [μ̃_E, ..., μ̃_E, μ̃_I, ..., μ̃_I]'`
-- `S` is a Bernoulli (0 or 1) sparsity mask with connection probability α
+- `A` is an N x N Gaussian random matrix (mean 0, variance 1)
+- `D = diag([sigma_tilde_e, ..., sigma_tilde_e, sigma_tilde_i, ..., sigma_tilde_i])` encodes population variance
+- `M = u * v'` is the rank-1 mean structure with `v = [mu_tilde_e, ..., mu_tilde_e, mu_tilde_i, ..., mu_tilde_i]'`
+- `S` is a Bernoulli (0 or 1) sparsity mask with connection probability `alpha`
 
 ---
 
@@ -203,7 +203,7 @@ The `add_grid_parameter(param_name, values)` method supports two modes:
 
 | Mode | Input | Behavior |
 |------|-------|----------|
-| **Range** | 1×2 vector `[min, max]` | Evenly divides the range into `n_levels` values using `linspace(min, max, n_levels)` |
+| **Range** | 1x2 vector `[min, max]` | Evenly divides the range into `n_levels` values using `linspace(min, max, n_levels)` |
 | **Explicit** | Vector with 3+ elements | Uses the exact values provided (ignores `n_levels` for this parameter) |
 
 **Examples:**
@@ -214,10 +214,10 @@ psa.add_grid_parameter('reps', [1, 2, 3, 4, 5]); % Explicit mode: uses [1, 2, 3,
 
 > **Note:** Each call to `add_grid_parameter` adds a dimension to the parameter space. The total number of simulations grows **multiplicatively**:
 > 
-> `Total = n_conditions × n_reps × (n_levels₁ × n_levels₂ × ...)`
+> `Total = n_conditions x n_reps x (n_levels_1 x n_levels_2 x ...)`
 > 
 > For example, 3 grid parameters with 5 levels each, 10 repetitions, and 4 conditions yields:
-> `4 × 10 × 5³ = 5,000` total simulations.
+> `4 x 10 x 5^3 = 5,000` total simulations.
 
 ### Key Features
 
@@ -239,16 +239,16 @@ Results are saved to `data/param_space/<timestamped_folder>/`:
 
 ```
 param_space_<note>_nLevs_<N>_<timestamp>/
-├── param_space_summary.mat      # Grid configuration
-├── psa_object.mat               # Serialized PSA object
-├── no_adaptation/
-│   └── param_space_results_no_adaptation.mat
-├── sfa_only/
-│   └── param_space_results_sfa_only.mat
-├── std_only/
-│   └── param_space_results_std_only.mat
-└── sfa_and_std/
-    └── param_space_results_sfa_and_std.mat
+|-- param_space_summary.mat      # Grid configuration
+|-- psa_object.mat               # Serialized PSA object
+|-- no_adaptation/
+|   +-- param_space_results_no_adaptation.mat
+|-- sfa_only/
+|   +-- param_space_results_sfa_only.mat
+|-- std_only/
+|   +-- param_space_results_std_only.mat
++-- sfa_and_std/
+    +-- param_space_results_sfa_and_std.mat
 ```
 
 Each result struct contains: `LLE`, `mean_rate`, `mean_synaptic_output`, `config`, `success`, and optionally `local_lya` time series.
