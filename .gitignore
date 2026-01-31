@@ -41,7 +41,7 @@ Thumbs.db
 # data files are too big
 *.mat
 
-# vector image formats are too big
+# vector image formats are too big typicall, but affinity vector formats are allowed
 *.fig
 *.svg
 
