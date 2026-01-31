@@ -144,27 +144,29 @@ J_array = compute_Jacobian_at_indices(S_out, J_times, params);
 
 % Compute eigenvalues for each Jacobian
 eigenvalues_all = cell(length(J_times), 1);
-for i = 1:length(J_times)
-    eigenvalues_all{i} = eig(J_array(:,:,i));
+for idx = 1:length(J_times)
+    eigenvalues_all{idx} = eig(J_array(:,:,idx));
 end
 
 %% Plot eigenvalue distributions on complex plane
-n_plots = length(J_times);
-if n_plots <= 4
+% Total subplots: 1 for eigs_diff (static I-W) + n_plots for Jacobian eigenvalues
+n_J_plots = length(J_times);
+n_total_plots = 1 + n_J_plots;  % eigs_diff first, then Jacobian eigenvalues
+if n_total_plots <= 4
     n_rows = 1;
-    n_cols = n_plots;
+    n_cols = n_total_plots;
 else
-    n_cols = ceil(sqrt(n_plots));
-    n_rows = ceil(n_plots / n_cols);
+    n_cols = ceil(sqrt(n_total_plots));
+    n_rows = ceil(n_total_plots / n_cols);
 end
 
-figure('Position', [1312, 526, 600, 360]);
-ax_handles = zeros(n_plots, 1);
+figure('Position', [1312, 526, 1100, 600]);
+ax_handles = zeros(n_total_plots, 1);
 
 % % Compute global axis limits across all eigenvalue sets
 % all_real = [];
 % all_imag = [];
-% for i = 1:n_plots
+% for i = 1:n_J_plots
 %     evals = eigenvalues_all{i};
 %     all_real = [all_real; real(evals)];
 %     all_imag = [all_imag; imag(evals)];
@@ -179,15 +181,25 @@ ax_handles = zeros(n_plots, 1);
 % global_ylim = global_ylim + [-0.1, 0.1] * y_range;
 
 % Hard-coded global axis limits for eigenvalue plots.  hard coded so they match between SFA and SFA+STD comparisons
-global_xlim = [-28.0, 4.5];
-global_ylim = [-17.0, 17.0];
+% global_xlim = [-28.0, 4.5];
+% global_ylim = [-17.0, 17.0];
 
-for i = 1:n_plots
-    ax_handles(i) = subplot(n_rows, n_cols, i);
-    evals = eigenvalues_all{i};
-    time_val = t_out(J_times(i));
-    ax_handles(i) = plot_eigenvalues(evals, ax_handles(i), time_val, global_xlim, global_ylim);
-    set(ax_handles(i), 'Color', 'none');
+global_xlim = [-55, 15.6];
+global_ylim = [-26, 26];
+
+% Subplot 1: eigenspectra of static I-W
+ax_handles(1) = subplot(n_rows, n_cols, 1);
+eigs_diff = 1/model.tau_d*eig(-eye(params.n) + model.W);
+ax_handles(1) = plot_eigenvalues(eigs_diff, ax_handles(1), 0, global_xlim, global_ylim);
+set(ax_handles(1), 'Color', 'none');
+
+% Subplots 2 through n_total_plots: Jacobian eigenvalues at each time point
+for i_plot = 1+(1:n_J_plots)
+    ax_handles(i_plot) = subplot(n_rows, n_cols, i_plot);
+    evals = eigenvalues_all{i_plot-1};
+    time_val = t_out(J_times(i_plot-1));
+    ax_handles(i_plot) = plot_eigenvalues(evals, ax_handles(i_plot), time_val, global_xlim, global_ylim);
+    set(ax_handles(i_plot), 'Color', 'none');
 end
 
 % Link axes of all subplots
@@ -280,20 +292,20 @@ end
 
 % Compute J_eff for each time point
 J_eff_array = zeros(params.n, params.n, length(J_times));
-for i = 1:length(J_times)
-    J_eff_array(:,:,i) = full(compute_J_eff(S_out(J_times(i),:)', params_J_eff_plot));
+for idx = 1:length(J_times)
+    J_eff_array(:,:,idx) = full(compute_J_eff(S_out(J_times(idx),:)', params_J_eff_plot));
 
     if omit_diagonal_in_J_eff
-        J_eff_array(:,:,i) = J_eff_array(:,:,i) - diag(diag(J_eff_array(:,:,i)));
+        J_eff_array(:,:,idx) = J_eff_array(:,:,idx) - diag(diag(J_eff_array(:,:,idx)));
     end
 end
 
 % Create J_eff figure with same layout as eigenvalue figure
 figure('Position', [100, 100, 600, 310]);
 
-for i = 1:n_plots
-    subplot(n_rows, n_cols, i);
-    imagesc(J_eff_array(:,:,i));
+for i_plot = 1:n_J_plots
+    subplot(n_rows, n_cols, i_plot);
+    imagesc(J_eff_array(:,:,i_plot));
     colormap(redwhiteblue_colormap(256));
     clim([-5, 5]);  % Hard-coded clim for J_eff
     axis square;
@@ -332,11 +344,7 @@ ylabel(cb, 'J_{eff}', 'Interpreter', 'tex', 'FontSize', 14);
 %     set(gca, 'Color', 'none');
 % end
 
-%% eigenspectra plot of I-W
-figure;
-ax = gca;
-eigs_diff = eig(-eye(params.n) + model.W);
-plot_eigenvalues(eigs_diff, ax, 0);
+% eigenspectra plot of I-W is now included as subplot 1 in the combined eigenvalue figure above
 
 %% Save results
 if save_figs

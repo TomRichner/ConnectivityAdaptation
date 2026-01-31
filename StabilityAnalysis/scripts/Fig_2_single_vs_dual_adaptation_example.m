@@ -5,6 +5,7 @@ setup_paths();
 script_path = fileparts(mfilename('fullpath'));
 project_root = fileparts(script_path);  % Go up from scripts/ to project root
 figs_root = fullfile(project_root, 'figs');
+output_folder_name = ['srnn_comparison_', datestr(now, 'yyyymmdd_HHMM')];
 
 set(groot, 'DefaultFigureColor', 'white');
 set(groot, 'DefaultAxesFontSize', 14);
@@ -38,9 +39,9 @@ note = 'SFA_only';
 n_a_E = 3; % three timeconstants of SFA
 n_b_E = 0; % no short-term synaptic depression
 
-save_dir = fullfile(figs_root, 'srnn_comparison', note);
+save_dir = fullfile(figs_root, output_folder_name, note);
 fprintf('Running SRNN with u_ex_scale=%g, n_a_E=%d, n_b_E=%d, level_of_chaos=%g\n', u_ex_scale, n_a_E, n_b_E, level_of_chaos);
-[~, ~, params_1, lya_1, plot_data_1] = full_SRNN_run_SRNNModel(u_ex_scale, n_a_E, n_b_E, level_of_chaos, rng_seeds, save_dir, save_figs, save_workspace, note, time_config);
+[~, ~, params_1, lya_1, plot_data_1] = full_SRNN_run_SRNNModel(u_ex_scale, n_a_E, n_b_E, level_of_chaos, rng_seeds, save_dir, false, save_workspace, note, time_config);
 
 run1.plot_data = plot_data_1;
 run1.params = params_1;
@@ -54,9 +55,9 @@ note = 'STD_and_SFA';
 n_a_E = 3;
 n_b_E = 1;
 
-save_dir = fullfile(figs_root, 'srnn_comparison', note);
+save_dir = fullfile(figs_root, output_folder_name, note);
 fprintf('Running SRNN with u_ex_scale=%g, n_a_E=%d, n_b_E=%d, level_of_chaos=%g\n', u_ex_scale, n_a_E, n_b_E, level_of_chaos);
-[~, ~, params_4, lya_4, plot_data_4] = full_SRNN_run_SRNNModel(u_ex_scale, n_a_E, n_b_E, level_of_chaos, rng_seeds, save_dir, save_figs, save_workspace, note, time_config);
+[~, ~, params_4, lya_4, plot_data_4] = full_SRNN_run_SRNNModel(u_ex_scale, n_a_E, n_b_E, level_of_chaos, rng_seeds, save_dir, false, save_workspace, note, time_config);
 run4.plot_data = plot_data_4;
 run4.params = params_4;
 run4.lya_results = lya_4;
@@ -72,10 +73,10 @@ AddLetters2Plots(fig_handle, {'(a)', '(b)', '(c)', '(d)', '(e)', '(f)'}, 'FontSi
 ylim([-1.9 1.9]) % y limits of the local lyapunov exponent
 
 if save_figs
-    save_dir_combined = fullfile(figs_root, 'srnn_comparison');
+    save_dir_combined = fullfile(figs_root, output_folder_name);
     save_name_base = 'combined_comparison';
 
     % Use the existing helper function
-    save_some_figs_to_folder_2(save_dir_combined, save_name_base, [fig_handle.Number], {'fig', 'svg', 'png', 'jp2'});
+    save_some_figs_to_folder_2(save_dir_combined, save_name_base, [], {'fig', 'svg', 'png', 'jp2'});
     fprintf('Combined plot saved to %s\n', save_dir_combined);
 end

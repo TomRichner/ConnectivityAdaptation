@@ -19,7 +19,7 @@ clc;
 close all;
 
 %% Configuration
-save_figs = true;
+save_figs = false;
 
 %% Setup paths
 setup_paths();
