@@ -6,17 +6,6 @@
 # MATLAB temporary files
 *.m~
 
-# Simulink autosave files
-*.autosave
-*.slxc
-
-# Simulink cache files
-slprj/
-*.slxc
-
-# Code generation folders
-codegen/
-
 # MATLAB compiled files (MEX)
 *.mex*
 *.mexw64
@@ -30,9 +19,6 @@ codegen/
 
 # MATLAB temporary variables
 matlab_crash_dump.*
-
-# Profiler output
-profile_results/
 
 # Build artifacts
 *.o
@@ -52,10 +38,11 @@ Thumbs.db
 *.swp
 *.swo
 
-# data files
+# data files are too big
 *.mat
 
+# vector image formats are too big
 *.fig
 *.svg
 
-# all figs allowed for this manuscript
+# png and jpeg are allowed in this repo since it is for a manuscript.

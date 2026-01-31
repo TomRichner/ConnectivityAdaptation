@@ -1,6 +1,6 @@
 # Derivation of the Effective Connectivity J_eff(x,a,b)
 
-This note derives the Jacobian of the x-dynamics with respect to x, treating the adaptation variables a and the synaptic depression variables b as constants (i.e., “frozen” at a given time t_1). The result is an effective connectivity matrix J_eff(x,a,b) that depends on the current state.
+This note derives the Jacobian of the x-dynamics with respect to x, treating the adaptation variables a and the synaptic depression variables b as constants (i.e., “frozen” at a given time t_1). The result is an effective connectivity matrix J_eff(x,a,b) that depends on the current state. Rather that considering the entire Jacobian in which the adaptation variables are included in the state, this approach helps the reader visualize how adaptation can be viewed as modulating connectivity, which is a concept investigated in the manuscript.
 
 ------------------------------------------------------------
 1. Model definition
