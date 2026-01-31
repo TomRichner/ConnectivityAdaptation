@@ -40,7 +40,7 @@ For a complete parameter reference, see [parameter_table.md](./parameter_table.m
 
 ## Class: SRNNModel
 
-**File:** [src/SRNNModel.m](./src/SRNNModel.m)
+**File:** [SRNNModel.m](../../StabilityAnalysis/src/SRNNModel.m)
 
 `SRNNModel` is the main simulation class. It encapsulates network parameters, ODE integration, Lyapunov exponent computation, and visualization.
 
@@ -126,7 +126,7 @@ where:
 
 ## Class: RMTMatrix
 
-**File:** [src/RMTMatrix.m](./src/RMTMatrix.m)
+**File:** [RMTMatrix.m](../../StabilityAnalysis/src/RMTMatrix.m)
 
 `RMTMatrix` constructs sparse connectivity matrices following Random Matrix Theory (Harris et al., 2023). It enforces Dale's law by separating excitatory and inhibitory populations with distinct mean weights.
 
@@ -182,7 +182,7 @@ where:
 
 ## Class: ParamSpaceAnalysis
 
-**File:** [src/ParamSpaceAnalysis.m](./src/ParamSpaceAnalysis.m)
+**File:** [ParamSpaceAnalysis.m](../../StabilityAnalysis/src/ParamSpaceAnalysis.m)
 
 `ParamSpaceAnalysis` performs multi-dimensional gridded parameter space analysis of stabiltity (and other metrics). The user can choose any combination of model parameters to vary.  By default it simulates all parameter combinations across four conditions: no adaptation, SFA only, STD only, and SFA + STD. This enables a systematic comparison of network behavior under different parameter ranges and conditions.  The parallel computing toolbox is highly recommended but not required.
 
@@ -274,4 +274,4 @@ The `src/` directory contains additional utilities:
 
 - [parameter_table.md](./parameter_table.md) – Complete parameter reference
 - [system_equations.md](./system_equations.md) – Mathematical model
-- [scripts/Script_Notes.md](./scripts/Script_Notes.md) – How to run the Figure 2 scripts
+- [Script_Notes.md](./Script_Notes.md) – How to run the Figure 2 scripts

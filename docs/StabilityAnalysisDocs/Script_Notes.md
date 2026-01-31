@@ -6,7 +6,7 @@ This document explains how to run the scripts used to generate Figure 2 in the m
 
 ## Prerequisites
 
-Before running any script in this directory, you **must** call [setup_paths.m](./setup_paths.m) to add the `src/` directory to the MATLAB path:
+Before running any script in this directory, you **must** call [setup_paths.m](../../StabilityAnalysis/scripts/setup_paths.m) to add the `src/` directory to the MATLAB path:
 
 ```matlab
 setup_paths();
@@ -25,7 +25,7 @@ This function:
 
 ### 1. Single vs Dual Adaptation Example
 
-**File:** [Fig_2_single_vs_dual_adaptation_example.m](./Fig_2_single_vs_dual_adaptation_example.m)
+**File:** [Fig_2_single_vs_dual_adaptation_example.m](../../StabilityAnalysis/scripts/Fig_2_single_vs_dual_adaptation_example.m)
 
 **Purpose:** Compares SFA-only vs SFA+STD on identical networks
 
@@ -52,7 +52,7 @@ figs/srnn_comparison_<YYYYMMDD_HHMM>/
 
 ### 2. Fraction Excitatory Analysis
 
-**File:** [Fig_2_fraction_excitatory_analysis.m](./Fig_2_fraction_excitatory_analysis.m)
+**File:** [Fig_2_fraction_excitatory_analysis.m](../../StabilityAnalysis/scripts/Fig_2_fraction_excitatory_analysis.m)
 
 **Purpose:** Parameter space sweep over excitatory fraction (f)
 
@@ -124,5 +124,5 @@ Batch checkpoint files are stored in `temp_batches/` within the output directory
 
 ## See Also
 
-- [Stability_Analysis_Code_Structure.md](../Stability_Analysis_Code_Structure.md) – Class documentation
-- [parameter_table.md](../parameter_table.md) – Parameter reference
+- [Stability_Analysis_Code_Structure.md](./Stability_Analysis_Code_Structure.md) – Class documentation
+- [parameter_table.md](./parameter_table.md) – Parameter reference

@@ -25,29 +25,32 @@ function [dS_dt] = SRNN_reservoir(t, S, t_ex, u_ex, params)
 
 The function implements the following system of differential equations:
 
-```
-dx_i/dt = (-x_i + Σ_j w_ij * r_j + u_i) / τ_d
-
-r_i = b_i * φ(x_i - c * Σ_k a_{i,k})
-
-da_{i,k}/dt = (-a_{i,k} + r_i) / τ_k
-
-db_i/dt = (1 - b_i) / τ_rec - (b_i * r_i) / τ_rel
-```
+$$
+\begin{aligned}
+\dot{x}_i &= \frac{-x_i + u_i + \sum_{j=1}^{J} w_{ij}\, b_j r_{j}}{\tau_d}\\[4pt]
+r_i &= \phi\!\left(
+            x_i - a_{0_i}
+            - c \sum_{k=1}^{K} a_{ik}
+        \right)\\[4pt]
+\dot{a}_{ik} &= \frac{-a_{ik} + r_i}{\tau_{k}}\\[4pt]
+\dot{b}_i &= \frac{1-b_i}{\tau_{rec}}
+            - \frac{b_i\, r_i}{\tau_{rel}}
+\end{aligned}
+$$
 
 Where:
 - `x_i`: Dendritic state of neuron i
 - `r_i`: Firing rate of neuron i
 - `a_{i,k}`: k-th adaptation variable for neuron i
-- `b_i`: Short-term depression variable for neuron i (0 < b_i ≤ 1)
-- `φ`: Nonlinear activation function (e.g., sigmoid, tanh)
-- `c`: Adaptation scaling factor (c_E for E neurons, c_I for I neurons)
-- `w_ij`: Connection weight from neuron j to neuron i
-- `u_i`: External input to neuron i
-- `τ_d`: Dendritic time constant (scalar)
-- `τ_k`: k-th adaptation time constant
-- `τ_rec`: STD recovery time constant
-- `τ_rel`: STD release time constant
+- `b_i`: Short-term depression variable for neuron i (0 < b_i $\leq$ 1)
+- `activation_function`: Nonlinear activation function (e.g., sigmoid, tanh)
+- `c_E`, `c_I`: Adaptation scaling factor for E/I neurons
+- `W(i,j)`: Connection weight from neuron j to neuron i
+- `u_ex`: External input matrix (n x nt)
+- `tau_d`: Dendritic time constant (scalar)
+- `tau_a_E`, `tau_a_I`: Adaptation time constant vectors (1 x n_a_E, 1 x n_a_I)
+- `tau_b_E_rec`, `tau_b_I_rec`: STD recovery time constant
+- `tau_b_E_rel`, `tau_b_I_rel`: STD release time constant
 
 ---
 
@@ -109,14 +112,14 @@ Adaptation variables for inhibitory neurons.
 #### `b_E` (n_E × n_b_E column vector, or empty if n_b_E = 0)
 Short-term depression variables for excitatory neurons.
 - **Size**: n_E × n_b_E (typically n_b_E = 1, so this is n_E × 1)
-- **Range**: 0 < b_E(i) ≤ 1, where b_E(i) = 1 means no depression
+- **Range**: 0 < b_E(i) $\leq$ 1, where b_E(i) = 1 means no depression
 - **Interpretation**: Multiplicative scaling of firing rate due to synaptic depression
-- **Dynamics**: b recovers toward 1 with time constant τ_rec, and decreases with firing rate r with time constant τ_rel
+- **Dynamics**: b recovers toward 1 with time constant `tau_b_E_rec`/`tau_b_I_rec`, and decreases with firing rate r with time constant `tau_b_E_rel`/`tau_b_I_rel`
 
 #### `b_I` (n_I × n_b_I column vector, or empty if n_b_I = 0)
 Short-term depression variables for inhibitory neurons.
 - **Size**: n_I × n_b_I (typically n_b_I = 0 or 1)
-- **Range**: 0 < b_I(i) ≤ 1, where b_I(i) = 1 means no depression
+- **Range**: 0 < b_I(i) $\leq$ 1, where b_I(i) = 1 means no depression
 - **Interpretation**: Multiplicative scaling of firing rate due to synaptic depression
 - **Note**: Often set to n_b_I = 0 since inhibitory synapses typically show less depression than excitatory synapses
 
@@ -177,8 +180,8 @@ Dendritic states for all neurons (both excitatory and inhibitory).
 
 | Field | Type | Size | Description |
 |-------|------|------|-------------|
-| `activation_function` | function handle | - | **[Required]** Nonlinear activation function φ. Should accept a vector and return a vector of the same size. Common choices: `@(x) tanh(x)`, `@(x) 1./(1 + exp(-4*x))` (sigmoid), `@(x) max(0, x)` (ReLU). |
-| `activation_function_derivative` | function handle | - | **[Required]** Derivative of activation function φ'(x). Required for Jacobian computation (Lyapunov analysis). Should accept a vector and return a vector of the same size. **Example**: For tanh, `@(x) 1 - tanh(x).^2`; for sigmoid, `@(x) 4*sigmoid(x).*(1 - sigmoid(x))`. |
+| `activation_function` | function handle | - | **[Required]** Nonlinear activation function. Should accept a vector and return a vector of the same size. Common choices: `@(x) tanh(x)`, `@(x) 1./(1 + exp(-4*x))` (sigmoid), `@(x) max(0, x)` (ReLU). |
+| `activation_function_derivative` | function handle | - | **[Required]** Derivative of `activation_function`. Required for Jacobian computation (Lyapunov analysis). Should accept a vector and return a vector of the same size. **Example**: For tanh, `@(x) 1 - tanh(x).^2`; for sigmoid, `@(x) 4*sigmoid(x).*(1 - sigmoid(x))`. |
 
 ---
 
@@ -264,7 +267,7 @@ This avoids repeatedly creating the interpolant object on every function call du
 
 2. **Disabling Adaptation**: Set `n_a_E = 0` or `n_a_I = 0` to disable adaptation for excitatory or inhibitory neurons, respectively.
 
-3. **Disabling STD**: Set `n_b_E = 0` or `n_b_I = 0` to disable short-term depression for excitatory or inhibitory neurons, respectively. When disabled, firing rates are computed as `r = φ(x_eff)` without the b multiplicative factor.
+3. **Disabling STD**: Set `n_b_E = 0` or `n_b_I = 0` to disable short-term depression for excitatory or inhibitory neurons, respectively. When disabled, firing rates are computed as `r = activation_function(x_eff)` without the b multiplicative factor.
 
 4. **State Vector Size**: The total size of the state vector is:
    ```
@@ -278,8 +281,8 @@ This avoids repeatedly creating the interpolant object on every function call du
 7. **Interpolation**: External input is linearly interpolated between time points in `t_ex`. The interpolation method uses `'none'` for extrapolation, which returns NaN for out-of-bounds queries to catch errors if the ODE solver attempts to step outside the defined time range.
 
 8. **Typical STD Time Constants**: 
-   - Recovery (τ_rec): 0.5-1.5 seconds (slow recovery from depression)
-   - Release (τ_rel): 0.01-0.1 seconds (fast depression during activity)
+   - Recovery (`tau_b_E_rec`/`tau_b_I_rec`): 0.5-1.5 seconds (slow recovery from depression)
+   - Release (`tau_b_E_rel`/`tau_b_I_rel`): 0.01-0.1 seconds (fast depression during activity)
 
 ---
 
@@ -289,17 +292,17 @@ This avoids repeatedly creating the interpolant object on every function call du
 `compute_Jacobian_fast.m` assembles the SRNN Jacobian with sparse matrices and Kronecker products. It produces the same matrix as `compute_Jacobian.m`, but the block-wise vectorization makes it far more efficient when Jacobians are needed repeatedly (e.g., Lyapunov spectrum via QR).
 
 ### Key characteristics
-- **Sparse blocks**: Each sub-block (`∂a/∂a`, `∂b/∂x`, `∂x/∂x`, …) is built with `spdiags`, `kron`, or sparse triplets. The final Jacobian is sparse, which accelerates the `J * Ψ` products integrated inside `lyapunov_spectrum_qr`.
-- **Vectorized reuse**: Per-neuron structures are reused through Kronecker scaffolds (e.g., `kron(I_pop, diag(-1./τ))`), avoiding explicit loops over neurons or adaptation indices.
+- **Sparse blocks**: Each sub-block (`da/da`, `db/dx`, `dx/dx`, ...) is built with `spdiags`, `kron`, or sparse triplets. The final Jacobian is sparse, which accelerates the `J * Psi` products integrated inside `lyapunov_spectrum_qr`.
+- **Vectorized reuse**: Per-neuron structures are reused through Kronecker scaffolds (e.g., `kron(I_pop, diag(-1./tau_a_E))`), avoiding explicit loops over neurons or adaptation indices.
 - **Drop-in compatibility**: Uses the same state ordering `[a_E; a_I; b_E; b_I; x]` and parameter fields. Existing code can switch to the fast version and, when needed, convert it to dense with `full(...)`.
-- **STD assumption**: Matches the current SRNN dynamics by supporting at most one STD variable per neuron (`n_b_E, n_b_I ∈ {0,1}`).
+- **STD assumption**: Matches the current SRNN dynamics by supporting at most one STD variable per neuron (`n_b_E, n_b_I` $\in$ `{0,1}`).
 
 ### Block construction highlights
-- `∂a/∂a` blocks: `kron(I_pop, diag(-1./τ)) + kron(diag(-b·c·φ'), τ^{-1}·1ᵀ)` captures both the diagonal leak and the shared adaptation coupling per neuron.
-- `∂a/∂b` & `∂a/∂x`: Formed via sparse triplets so each adaptation row only touches its neuron's STD and dendritic states.
-- `∂b/∂a`, `∂b/∂b`, `∂b/∂x`: Use diagonal matrices for per-neuron coefficients combined with `kron` replicators over adaptation columns.
-- `∂x/∂a` & `∂x/∂b`: Convert `W` to sparse and multiply by diagonal gain matrices, then replicate across adaptation/STD columns with `kron`. **All terms divided by τ_d** to match equation `dx/dt = (-x + W*r + u) / τ_d`.
-- `∂x/∂x`: Implemented as `diag(-1/τ_d) + (W * diag(b .* φ')) / τ_d`, with both diagonal and coupling terms properly scaled by τ_d.
+- `da/da` blocks: `kron(I_pop, diag(-1./tau_a)) + kron(diag(-b.*c.*activation_function_derivative), (1./tau_a).*ones(1,n_a))` captures both the diagonal leak and the shared adaptation coupling per neuron.
+- `da/db` & `da/dx`: Formed via sparse triplets so each adaptation row only touches its neuron's STD and dendritic states.
+- `db/da`, `db/db`, `db/dx`: Use diagonal matrices for per-neuron coefficients combined with `kron` replicators over adaptation columns.
+- `dx/da` & `dx/db`: Convert `W` to sparse and multiply by diagonal gain matrices, then replicate across adaptation/STD columns with `kron`. **All terms divided by `tau_d`** to match equation `dx/dt = (-x + W*r + u) / tau_d`.
+- `dx/dx`: Implemented as `diag(-1/tau_d) + (W * diag(b .* activation_function_derivative)) / tau_d`, with both diagonal and coupling terms properly scaled by `tau_d`.
 
 ### Usage
 - `full_SRNN_caller.m` now evaluates both Jacobians at the initial state (printing absolute/relative differences) and uses `compute_Jacobian_fast` inside the Lyapunov wrapper.
@@ -487,7 +490,7 @@ All outputs are structs with `.E` and `.I` fields:
 ### Algorithm
 1. **Unpack**: Extracts a_E, a_I, b_E, b_I, x from state vector
 2. **Compute x_eff**: Applies adaptation: x_eff = x - c * sum(a)
-3. **Compute r**: Applies STD and activation: r = b .* φ(x_eff)
+3. **Compute r**: Applies STD and activation: r = b .* activation_function(x_eff)
 4. **Split E/I**: Organizes variables into excitatory and inhibitory components
 
 ### Design Benefits
