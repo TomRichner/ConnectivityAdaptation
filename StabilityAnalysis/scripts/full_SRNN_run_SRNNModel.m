@@ -190,7 +190,15 @@ global_ylim = [-26, 26];
 % Subplot 1: eigenspectra of static I-W
 ax_handles(1) = subplot(n_rows, n_cols, 1);
 eigs_diff = 1/model.tau_d*eig(-eye(params.n) + model.W);
-ax_handles(1) = plot_eigenvalues(eigs_diff, ax_handles(1), 0, global_xlim, global_ylim);
+
+% Calculate theoretical circle parameters
+% Center: -1/tau_d
+% Radius: R / tau_d  <-- R now includes level_of_chaos scaling
+circle_center = -1 / model.tau_d;
+circle_radius = model.R / model.tau_d;
+circle_params = struct('center', circle_center, 'radius', circle_radius);
+
+ax_handles(1) = plot_eigenvalues(eigs_diff, ax_handles(1), 0, global_xlim, global_ylim, circle_params);
 set(ax_handles(1), 'Color', 'none');
 
 % Subplots 2 through n_total_plots: Jacobian eigenvalues at each time point

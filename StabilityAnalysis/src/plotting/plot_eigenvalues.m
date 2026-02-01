@@ -1,9 +1,10 @@
-function ax = plot_eigenvalues(eigenvalues, ax, time_value, x_lim, y_lim)
+function ax = plot_eigenvalues(eigenvalues, ax, time_value, x_lim, y_lim, circle_params)
 % plot_eigenvalues - Plot eigenvalue distribution on complex plane
 %
 % Syntax:
 %   ax = plot_eigenvalues(eigenvalues, ax, time_value)
 %   ax = plot_eigenvalues(eigenvalues, ax, time_value, x_lim, y_lim)
+%   ax = plot_eigenvalues(eigenvalues, ax, time_value, x_lim, y_lim, circle_params)
 %
 % Description:
 %   Plots eigenvalue distribution on the complex plane with polished styling
@@ -16,6 +17,7 @@ function ax = plot_eigenvalues(eigenvalues, ax, time_value, x_lim, y_lim)
 %   time_value  - Time value to display in title (in seconds)
 %   x_lim       - (Optional) [xmin xmax] limits for x-axis
 %   y_lim       - (Optional) [ymin ymax] limits for y-axis
+%   circle_params - (Optional) struct with fields 'center' and 'radius'
 %
 % Outputs:
 %   ax - Axes handle (returned for convenience)
@@ -29,6 +31,9 @@ function ax = plot_eigenvalues(eigenvalues, ax, time_value, x_lim, y_lim)
 % See also: plot_lyapunov, plot_SRNN_tseries
 
 % Handle optional arguments
+if nargin < 6
+    circle_params = [];
+end
 if nargin < 5
     y_lim = [];
 end
@@ -39,8 +44,34 @@ end
 % Make the specified axes current
 axes(ax);
 
-% Scatter plot of eigenvalues on complex plane (unfilled black circles)
-scatter(real(eigenvalues), imag(eigenvalues), 36, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', 'none', 'LineWidth', 0.5);
+% Identify outliers if circle parameters are provided
+is_outlier = false(size(eigenvalues));
+if ~isempty(circle_params) && isfield(circle_params, 'center') && isfield(circle_params, 'radius')
+    dists = abs(eigenvalues - circle_params.center);
+    is_outlier = dists > circle_params.radius;
+end
+
+% Scatter plot of eigenvalues
+hold on;
+% Plot non-outliers (standard style: unfilled black circles)
+if any(~is_outlier)
+    scatter(real(eigenvalues(~is_outlier)), imag(eigenvalues(~is_outlier)), 36, ...
+        'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', 'none', 'LineWidth', 0.5);
+end
+
+% Plot outliers (new style: black x)
+if any(is_outlier)
+    scatter(real(eigenvalues(is_outlier)), imag(eigenvalues(is_outlier)), 36, ...
+        'MarkerEdgeColor', [0 0 0], 'Marker', 'x', 'LineWidth', 1.0);
+end
+
+% Draw theoretical circle if provided
+if ~isempty(circle_params) && isfield(circle_params, 'center') && isfield(circle_params, 'radius')
+    theta = linspace(0, 2*pi, 100);
+    x_circ = real(circle_params.center) + circle_params.radius * cos(theta);
+    y_circ = imag(circle_params.center) + circle_params.radius * sin(theta);
+    plot(x_circ, y_circ, 'k--', 'LineWidth', 1.0);
+end
 
 % Get axis limits (use auto-scaled if not provided)
 if isempty(x_lim)

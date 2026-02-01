@@ -205,7 +205,7 @@ classdef SRNNModel < handle
             if isnan(obj.sigma_se) || isnan(obj.sigma_si)
                 val = NaN;
             else
-                val = sqrt(obj.n * (obj.f * obj.sigma_se^2 + (1 - obj.f) * obj.sigma_si^2));
+                val = sqrt(obj.n * (obj.f * obj.sigma_se^2 + (1 - obj.f) * obj.sigma_si^2)) * obj.level_of_chaos;
             end
         end
     end
@@ -271,7 +271,7 @@ classdef SRNNModel < handle
             % Report info
             W_eigs_scaled = eig(obj.W);
             fprintf('W matrix created: spectral radius = %.3f, abscissa = %.3f, theoretical R = %.3f\n', ...
-                max(abs(W_eigs_scaled)), max(real(W_eigs_scaled)), rmt.R * obj.level_of_chaos);
+                max(abs(W_eigs_scaled)), max(real(W_eigs_scaled)), obj.R);
 
             % Generate external stimulus
             obj.generate_stimulus();
@@ -537,7 +537,7 @@ classdef SRNNModel < handle
             eigs_J = eig(J_lti);
 
             % Theoretical predictions
-            R_W = obj.R * obj.level_of_chaos;  % Scale by level_of_chaos since W is scaled
+            R_W = obj.R;  % Already scaled by level_of_chaos
             outlier_threshold = 1.04;
 
             % Create figure
