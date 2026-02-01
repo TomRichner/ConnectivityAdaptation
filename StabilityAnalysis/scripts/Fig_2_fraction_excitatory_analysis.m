@@ -12,17 +12,17 @@
 %   - Batched execution with resume capability
 %
 % See also: ParamSpaceAnalysis, SRNNModel, SensitivityAnalysis
-clear
+% clear  % Commented out for master script compatibility
 
-clear all;
-clc;
-close all;
+% clear all;  % Commented out for master script compatibility
+% clc;  % Commented out for master script compatibility
+% close all;  % Commented out for master script compatibility
 
 %% Configuration
 save_figs = false;
 
 %% Setup paths
-setup_paths();
+% setup_paths();  % Commented out - called by master script
 
 % Derive project root from script location for portable paths
 script_path = fileparts(mfilename('fullpath'));

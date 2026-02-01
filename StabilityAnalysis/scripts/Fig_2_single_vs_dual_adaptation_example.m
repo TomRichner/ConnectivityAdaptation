@@ -1,5 +1,5 @@
-close all; clear all; clc;
-setup_paths();
+% close all; clear all; clc;  % Commented out for master script compatibility
+% setup_paths();  % Commented out - called by master script
 
 % Derive project root from script location for portable paths
 script_path = fileparts(mfilename('fullpath'));

@@ -2,7 +2,7 @@
 % Equations from Harris, I. D., Meffin, H., Burkitt, A. N. & Peterson, A. D. H. Effect of sparsity on network stability in random neural networks obeying Dale's law. Phys. Rev. Res. 5, 043132 (2023).
 % Code implementation by Thomas J. Richner for a small perspectives manuscript which briefly reviews random matrix theory including the excellent work by Harris et al.
 
-clear; close all; clc;
+% clear; close all; clc;  % Commented out for master script compatibility
 
 save_figs = false; % saves fig, svg, png, jpeg2000
 
