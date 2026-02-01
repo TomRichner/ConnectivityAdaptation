@@ -10,15 +10,15 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Define the folders to process
-# FOLDERS=(
-#     "EquationsParametersDocs"
-#     "RandomMatrixTheoryDocs"
-#     "StabilityAnalysisDocs"
-# )
-
 FOLDERS=(
     "EquationsParametersDocs"
+    "RandomMatrixTheoryDocs"
+    "StabilityAnalysisDocs"
 )
+
+# FOLDERS=(
+#     "EquationsParametersDocs"
+# )
 
 # Convert each .md file to PDF in each folder
 for folder in "${FOLDERS[@]}"; do

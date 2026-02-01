@@ -6,17 +6,17 @@ This document describes the object-oriented architecture of the StabilityAnalysi
 
 ## System Equations
 
-The SRNN dynamics are governed by the following system of differential equations (see [system_equations.md](./system_equations.md)):
+The SRNN dynamics are governed by the following system of differential equations (see [system_equations.md](../EquationsParametersDocs/system_equations.md)):
 
 $$
 \begin{aligned}
-\dot{x}_i &= \frac{-x_i + u_i + \sum_{j=1}^{N} w_{ij}\, b_j r_{j}}{\tau_d}\\[4pt]
+\frac{dx_i}{dt} &= \frac{-x_i + u_i + \sum_{j=1}^{N} w_{ij}\, b_j r_{j}}{\tau_d}\\[4pt]
 r_i &= \phi\!\left(
             x_i - a_{0_i}
             - c \sum_{k=1}^{K} a_{ik}
         \right)\\[4pt]
-\dot{a}_{ik} &= \frac{-a_{ik} + r_i}{\tau_{a_k}}\\[4pt]
-\dot{b}_i &= \frac{1-b_i}{\tau_{rec}}
+\frac{da_{ik}}{dt} &= \frac{-a_{ik} + r_i}{\tau_{a_k}}\\[4pt]
+\frac{db_i}{dt} &= \frac{1-b_i}{\tau_{rec}}
             - \frac{b_i\, r_i}{\tau_{rel}}
 \end{aligned}
 $$
@@ -34,7 +34,7 @@ $$
 | $\tau_{rec}, \tau_{rel}$ | STD recovery and release time constants |
 | $c$ | SFA coupling strength |
 
-For a complete parameter reference, see [parameter_table.md](./parameter_table.md).
+For a complete parameter reference, see [parameter_table.md](../EquationsParametersDocs/parameter_table.md).
 
 ---
 
@@ -272,6 +272,6 @@ The `src/` directory contains additional utilities:
 
 ## See Also
 
-- [parameter_table.md](./parameter_table.md) – Complete parameter reference
-- [system_equations.md](./system_equations.md) – Mathematical model
+- [parameter_table.md](../EquationsParametersDocs/parameter_table.md) – Complete parameter reference
+- [system_equations.md](../EquationsParametersDocs/system_equations.md) – Mathematical model
 - [Script_Notes.md](./Script_Notes.md) – How to run the Figure 2 scripts

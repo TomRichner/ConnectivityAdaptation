@@ -74,8 +74,8 @@ $$
 | **Lyapunov Settings** |||||
 | — | LLE method | — | — | Benettin rescaling shadow trace method |
 | $\Delta t_{lya}$ | Rescaling period | 20 | ms | Shadow trace rescaling interval |
-| $f_{corner}$ | LLE filter corner | $\frac{1}{4}$ | Hz | Local LLE lowpass filter corner frequency |
-| — | Filter type | — | — | 4th order bidirectional Butterworth |
+| $d_0$ | Perturbation norm | $10^{-3}$ | — | Initial and rescaled perturbation magnitude |
+| $f_{corner}$ | LLE filter corner | 0.25 | Hz | corner frequency for lowpass filter of local LLE for plotting, 4th order bidirectional Butterworth |
 
 ---
 

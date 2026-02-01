@@ -43,9 +43,9 @@ This script runs two simulations with the **same connectivity matrix W** and **s
 **Output Location:**
 ```
 figs/srnn_comparison_<YYYYMMDD_HHMM>/
-├── SFA_only/           # Individual SFA-only plots
-├── STD_and_SFA/        # Individual SFA+STD plots
-└── combined_comparison.{fig,svg,png,jp2}
++-- SFA_only/           # Individual SFA-only plots
++-- STD_and_SFA/        # Individual SFA+STD plots
++-- combined_comparison.{fig,svg,png,jp2}
 ```
 
 ---
@@ -74,23 +74,23 @@ Each combination is tested under all **four adaptation conditions**:
 **Data Output Location:**
 ```
 data/param_space/param_space_<note>_nLevs_<N>_<timestamp>/
-├── param_space_summary.mat
-├── psa_object.mat
-├── no_adaptation/
-│   └── param_space_results_no_adaptation.mat
-├── sfa_only/
-│   └── param_space_results_sfa_only.mat
-├── std_only/
-│   └── param_space_results_std_only.mat
-└── sfa_and_std/
-    └── param_space_results_sfa_and_std.mat
++-- param_space_summary.mat
++-- psa_object.mat
++-- no_adaptation/
+|   +-- param_space_results_no_adaptation.mat
++-- sfa_only/
+|   +-- param_space_results_sfa_only.mat
++-- std_only/
+|   +-- param_space_results_std_only.mat
++-- sfa_and_std/
+    +-- param_space_results_sfa_and_std.mat
 ```
 
 **Figure Output Location** (when `save_figs = true`):
 ```
 figs/fraction_excitatory_analysis/
-├── fraction_excitatory.{fig,svg,png,jp2}
-└── data_source.txt    # Records which data folder figures came from
++-- fraction_excitatory.{fig,svg,png,jp2}
++-- data_source.txt    # Records which data folder figures came from
 ```
 
 ---
@@ -125,4 +125,4 @@ Batch checkpoint files are stored in `temp_batches/` within the output directory
 ## See Also
 
 - [Stability_Analysis_Code_Structure.md](./Stability_Analysis_Code_Structure.md) – Class documentation
-- [parameter_table.md](./parameter_table.md) – Parameter reference
+- [parameter_table.md](../EquationsParametersDocs/parameter_table.md) – Parameter reference
