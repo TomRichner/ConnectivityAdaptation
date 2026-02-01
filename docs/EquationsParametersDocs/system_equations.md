@@ -3,7 +3,7 @@ $$
 $$
 
 $$
-r_i = \phi\!\left( x_i - a_{0_i} - c \sum_{k=1}^{K} a_{ik} \right)
+r_i = \phi\left( x_i - a_{0_i} - c \sum_{k=1}^{K} a_{ik} \right)
 $$
 
 $$

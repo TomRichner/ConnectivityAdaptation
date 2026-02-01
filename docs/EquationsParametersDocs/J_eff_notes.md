@@ -30,7 +30,7 @@ where
 The firing rate $r_i$ is given by
 
 $$
-r_i = b_i\,\phi\!\left(
+r_i = b_i\,\phi\left(
     x_i - a_{0_i}
     - c \sum_{k=1}^{K} a_{ik}
 \right),
@@ -95,7 +95,7 @@ We treat $a_{ik}$ and $b_i$ as constants. For each neuron $i$,
 
 $$
 r_i
-= b_i\,\phi\!\left(
+= b_i\,\phi\left(
     x_i - a_{0_i}
     - c \sum_{k=1}^{K} a_{ik}
 \right).
@@ -111,14 +111,14 @@ $$
 Then
 
 $$
-r_i = b_i\,\phi\!\left(x_i - \mathrm{const}_i\right).
+r_i = b_i\,\phi\left(x_i - \mathrm{const}_i\right).
 $$
 
 The partial derivative of $r_i$ with respect to $x_j$ is
 
 $$
 \frac{\partial r_i}{\partial x_j}
-= b_i\,\phi'\!\left(x_i - \mathrm{const}_i\right)\,\delta_{ij},
+= b_i\,\phi'\left(x_i - \mathrm{const}_i\right)\,\delta_{ij},
 $$
 
 where $\delta_{ij}$ is the Kronecker delta.
@@ -127,7 +127,7 @@ Define the gain vector
 
 $$
 g_i
-= b_i\,\phi'\!\left(
+= b_i\,\phi'\left(
     x_i - a_{0_i}
     - c \sum_{k=1}^{K} a_{ik}
 \right),
@@ -223,8 +223,8 @@ $$
 Explicitly,
 
 $$
-G = \mathrm{diag}\!\Bigl(
-  b_i\,\phi'\!\bigl(x_i - a_{0_i} - c\sum_{k=1}^{K} a_{ik}\bigr)
+G = \mathrm{diag}\Bigl(
+  b_i\,\phi'\bigl(x_i - a_{0_i} - c\sum_{k=1}^{K} a_{ik}\bigr)
 \Bigr).
 $$
 
@@ -242,8 +242,8 @@ $$
   where
 
 $$
-  G = \mathrm{diag}\!\Bigl(
-    b_i\,\phi'\!\bigl(x_i - a_{0_i} - c\sum_{k=1}^{K} a_{ik}\bigr)
+  G = \mathrm{diag}\Bigl(
+    b_i\,\phi'\bigl(x_i - a_{0_i} - c\sum_{k=1}^{K} a_{ik}\bigr)
   \Bigr).
 $$
 
@@ -252,7 +252,7 @@ $$
 $$
   J_{\mathrm{eff},ij}
   = -\frac{1}{\tau_d}\delta_{ij}
-    + \frac{1}{\tau_d} w_{ij}\,b_j\,\phi'\!\left(
+    + \frac{1}{\tau_d} w_{ij}\,b_j\,\phi'\left(
         x_j - a_{0_j}
         - c \sum_{k=1}^{K} a_{jk}
       \right).
