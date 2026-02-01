@@ -23,7 +23,7 @@ Key theoretical results implemented here include:
 
 The neural network dynamics are governed by a continuous rate model similar to those introduced by Hopfield (1982, 1984), found to be chaotic by Sompolinsky et al. (1988), and further analyzed by Harris et al. (2023) among others. Tau is assumed to be 1 in this class.
 
-$$\dot{x}_i(t) = -\frac{x_i(t)}{\tau} + \sum_{j=1}^N w_{ij}\phi(x_j(t)) \quad \text{(Eq. 1)}$$
+$$\frac{dx_i(t)}{dt} = -\frac{x_i(t)}{\tau} + \sum_{j=1}^N w_{ij}\phi(x_j(t)) \quad \text{(Eq. 1)}$$
 
 ### Connectivity Matrix Structure (Eq. 6, 11-12)
 

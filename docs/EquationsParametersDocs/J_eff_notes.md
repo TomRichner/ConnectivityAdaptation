@@ -14,7 +14,7 @@ We consider a network of $N$ neurons (indices $i,j = 1,\dots,N$) with the follow
 The membrane / rate state variable $x_i$ evolves as
 
 $$
-\dot{x}_i = \frac{-x_i + u_i + \sum_{j=1}^{N} w_{ij}\, r_j}{\tau_d},
+\frac{dx_i}{dt} = \frac{-x_i + u_i + \sum_{j=1}^{N} w_{ij}\, r_j}{\tau_d},
 $$
 
 where
