@@ -218,4 +218,3 @@ The script `Fig_1_RMT_examples.m` demonstrates various configurations of the `RM
 
 - **Source Code**: `RandomMatrixTheory/RMT.m`
 - **Example Script**: `RandomMatrixTheory/Fig_1_RMT_examples.m`
-- **Theory Reference**: `Harris_2023_equations.md` (in the RandomMatrixTheory repository)

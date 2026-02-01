@@ -38,4 +38,11 @@ for folder in "${FOLDERS[@]}"; do
     fi
 done
 
+# Convert the root README.md separately
+README_PATH="$SCRIPT_DIR/../README.md"
+if [ -f "$README_PATH" ]; then
+    echo "Converting root README.md to PDF..."
+    pandoc "$README_PATH" -o "$SCRIPT_DIR/../README.pdf" --pdf-engine=pdflatex -V geometry:margin=0.75in
+fi
+
 echo "Done!"
