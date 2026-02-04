@@ -45,7 +45,7 @@ $$
 | $f$ | Fraction excitatory | $\frac{1}{2}$ or (0.4–0.6) | — | Fraction of excitatory neurons, remainder are inhibitory; systematically varied from 0.4 to 0.6 to produce figure 2 x-zz |
 | $S$ | Sparsity mask | — | — | Binary mask, $S_{ij} \sim \text{Bernoulli}(\alpha)$ |
 | $\alpha$ | Connection probability | $\frac{1}{3}$ | — | $\alpha = \text{indegree}/N = 100/300$ |
-| $F$ | Default scaling factor | $\frac{1}{\sqrt{N\alpha(2-\alpha)}}$ | — | Scaling factor which yields $R=1$ if $\tilde{\mu}_E, \tilde{\mu}_I, \tilde{\sigma}_E, \text{ and } \tilde{\sigma}_I$ are equal. |
+| $F$ | Default scaling factor | $\frac{1}{\sqrt{N\alpha(2-\alpha)}}$ | — | Scaling factor which yields $R=1$ if $\tilde{\mu}_E, \tilde{\mu}_I, \tilde{\sigma}_E, \text{ and } \tilde{\sigma}_I$ are equal (see derivation below). |
 | $\tilde{\mu}_E$ | Mean excitatory weight | $3 F$ | — | Normalized mean of non-zero E weights |
 | $\tilde{\mu}_I$ | Mean inhibitory weight | $-4 F$ | — | Normalized mean of non-zero I weights. If $f=\frac{1}{2}$, then inhibition exceeds excitation ($-4 F$ vs. $+3 F$), creating a negative global outlier eigenvalue|
 | $\tilde{\sigma}_E$ | Std dev excitatory | $F$ | — | Normalized std dev of non-zero E weights |
@@ -58,9 +58,9 @@ $$
 | **Adaptation Strength** |||||
 | $c_E$ | SFA coupling | $\frac{1}{12}$ | — | SFA strength per timescale |
 | **Activation Function** |||||
-| $\phi$ | Piecewise sigmoid | $(-\infty,\infty) \to [0,1]$ | — | Hard sigmoid with rounded corners |
-| $a_\phi$ | Linear fraction | 0.9 | — | Fraction of domain with slope 1 |
-| $c_\phi$ | Sigmoid center | 0.4 | — | Horizontal shift; $\phi(c_\phi) = \frac{1}{2}$ |
+| $\phi$ | Piecewise sigmoid | $(-\infty,\infty) \to [0,1]$ | — | Hard sigmoid with rounded corners (see definition below) |
+| $q_\phi$ | Linear fraction | 0.9 | — | Fraction of the range [0, 1] that is linear (slope 1) |
+| $a_0$ | Sigmoid center | 0.4 | — | Horizontal shift; $\phi(a_0) = \frac{1}{2}$ |
 | **Stimulus Configuration** |||||
 | $n_{steps}$ | Number of periods | 3 | — | Total number of no-stim and stim periods |
 | $\rho_E$ | E input density | 0.15 | — | Fraction of E neurons receiving external input |
@@ -79,6 +79,74 @@ $$
 | $\Delta t_{lya}$ | Rescaling period | 20 | ms | Shadow trace rescaling interval |
 | $d_0$ | Perturbation norm | $10^{-3}$ | — | Initial and rescaled perturbation magnitude |
 | $f_{corner}$ | LLE filter corner | 0.25 | Hz | corner frequency for lowpass filter of local LLE for plotting, 4th order bidirectional Butterworth |
+
+---
+
+## Definition of the Activation Function $\phi(x)$
+
+The activation function $\phi(x)$ is a **hard sigmoid with rounded corners**—a piecewise function composed of five regions that smoothly transitions between saturation at 0 and 1.
+
+**Domain:** $(-\infty, \infty)$  
+**Range:** $[0, 1]$
+
+**Auxiliary quantities:**
+
+Let the half-width of the linear segment be $q = \frac{q_\phi}{2}$, and define the scaling constant for the quadratic regions:
+
+$$k = \frac{1}{2(1 - 2q)}$$
+
+The four breakpoints dividing the five regions are:
+
+$$x_1 = a_0 + q - 1, \quad x_2 = a_0 - q, \quad x_3 = a_0 + q, \quad x_4 = a_0 + 1 - q$$
+
+**Piecewise definition:**
+
+$$
+\phi(x) = 
+\begin{cases}
+0 & \text{if } x < x_1 \quad \text{(left saturation)} \\[4pt]
+k(x - x_1)^2 & \text{if } x_1 \le x < x_2 \quad \text{(left quadratic)} \\[4pt]
+(x - a_0) + \tfrac{1}{2} & \text{if } x_2 \le x \le x_3 \quad \text{(linear segment)} \\[4pt]
+1 - k(x - x_4)^2 & \text{if } x_3 < x \le x_4 \quad \text{(right quadratic)} \\[4pt]
+1 & \text{if } x > x_4 \quad \text{(right saturation)}
+\end{cases}
+$$
+
+**Parameter interpretation:**
+
+- **$q_\phi \in [0, 1]$**: Controls the width of the central linear region. When $q_\phi = 1$, the function reduces to a standard hard sigmoid (pure piecewise linear with corners). When $q_\phi = 0$, the function becomes purely quadratic transitions with no linear segment.
+
+- **$a_0$**: The horizontal center of the sigmoid. At $x = a_0$, the function outputs $\phi(a_0) = \frac{1}{2}$. This parameter shifts the entire function along the $x$-axis, allowing the resting point of the firing rate to be tuned.
+
+> **Note:** The quadratic segments ensure $C^1$ continuity (smooth corners) at the transitions between the linear and saturated regions, avoiding the discontinuous derivatives of a standard hard sigmoid.
+
+---
+
+## Derivation of the Default Scaling Factor $F$
+
+The scaling factor $F$ is derived from Harris (2023), Equations 16 and 18.
+
+**Equation 16** — Sparse variance for population $k \in \{e, i\}$:
+
+$$\sigma_{sk}^2 = \alpha(1-\alpha)\tilde{\mu}_k^2 + \alpha \tilde{\sigma}_k^2$$
+
+**Equation 18** — Spectral radius:
+
+$$\mathcal{R} = \sqrt{N[f \sigma_{se}^2 + (1-f)\sigma_{si}^2]}$$
+
+**Derivation:** To find the scaling factor $F$ that yields a unit spectral radius ($\mathcal{R} = 1$) when all normalized parameters are equal, set $|\tilde{\mu}_E| = |\tilde{\mu}_I| = \tilde{\sigma}_E = \tilde{\sigma}_I = F$.
+
+Substituting into Eq. 16:
+
+$$\sigma_{se}^2 = \sigma_{si}^2 = \alpha(1-\alpha)F^2 + \alpha F^2 = F^2[\alpha - \alpha^2 + \alpha] = F^2 \cdot \alpha(2-\alpha)$$
+
+Substituting into Eq. 18, noting that $f + (1-f) = 1$:
+
+$$\mathcal{R} = \sqrt{N \cdot F^2 \cdot \alpha(2-\alpha)} = 1$$
+
+Solving for $F$:
+
+$$F = \frac{1}{\sqrt{N\alpha(2-\alpha)}}$$
 
 ---
 

@@ -15,9 +15,9 @@ classdef SRNNModel < handle
 
     %% Network Architecture Properties
     properties
-        n = 100                     % Total number of neurons
+        n = 300                     % Total number of neurons
         f = 0.5                     % Fraction of excitatory neurons
-        indegree = 20               % Expected in-degree
+        indegree = 100              % Expected in-degree
 
         % RMT tilde-notation parameters (Harris 2023)
         mu_E_tilde                  % Normalized excitatory mean (default: 1/(alpha*sqrt(n)))
@@ -233,11 +233,11 @@ classdef SRNNModel < handle
             % Default val D derived to give R=1: 1 = D * sqrt(n * alpha * (2 - alpha))
             default_val = 1 / sqrt(obj.n * alpha_val * (2 - alpha_val));
 
-            if isempty(obj.mu_E_tilde),    obj.mu_E_tilde = default_val;     end
-            if isempty(obj.mu_I_tilde),    obj.mu_I_tilde = -default_val;    end
+            if isempty(obj.mu_E_tilde),    obj.mu_E_tilde = 3*default_val;     end
+            if isempty(obj.mu_I_tilde),    obj.mu_I_tilde = -4*default_val;    end
             if isempty(obj.sigma_E_tilde), obj.sigma_E_tilde = default_val;  end
             if isempty(obj.sigma_I_tilde), obj.sigma_I_tilde = default_val;  end
-
+            1
             % Compute tau_a arrays if n_a > 0 but tau_a not set
             if obj.n_a_E > 0 && isempty(obj.tau_a_E)
                 obj.tau_a_E = logspace(log10(0.25), log10(10), obj.n_a_E);
@@ -696,7 +696,8 @@ classdef SRNNModel < handle
             obj.input_config.no_stim_pattern(1:2:end) = true;
             obj.input_config.intrinsic_drive = [];  % Will be set in build
             obj.input_config.positive_only = false;  % Default: allow positive and negative amplitudes
-            % step_density_E/I not set by default (uses step_density uniformly)
+            obj.input_config.step_density_E = 0.15;   % Fraction of E neurons receiving input
+            obj.input_config.step_density_I = 0;      % Fraction of I neurons receiving input (0 = E only)
 
             % T_plot defaults to T_range (set in build if not specified)
             obj.T_plot = [];
