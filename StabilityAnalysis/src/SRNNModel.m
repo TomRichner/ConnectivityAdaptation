@@ -98,6 +98,7 @@ classdef SRNNModel < handle
     %% RMT Dependent Properties (computed from tilde parameters)
     properties (Dependent)
         alpha               % Sparsity = indegree/n
+        default_val         % Normalization factor F = 1/sqrt(N*alpha*(2-alpha)) (Harris 2023)
         mu_se               % Sparse excitatory mean
         mu_si               % Sparse inhibitory mean
         sigma_se            % Sparse excitatory std dev
@@ -167,6 +168,14 @@ classdef SRNNModel < handle
             val = obj.indegree / obj.n;
         end
 
+        function val = get.default_val(obj)
+            % DEFAULT_VAL Normalization factor F = 1/sqrt(N*alpha*(2-alpha))
+            % Scaling factor which yields R=1 when all tilde parameters are equal.
+            % See parameter_table.md for derivation (Harris 2023).
+            fprintf('default_val (F) computed with n=%d, alpha=%.4f\n', obj.n, obj.alpha);
+            val = 1 / sqrt(obj.n * obj.alpha * (2 - obj.alpha));
+        end
+
         function val = get.mu_se(obj)
             if isempty(obj.mu_E_tilde)
                 val = NaN;
@@ -229,15 +238,14 @@ classdef SRNNModel < handle
             obj.compute_derived_params();
 
             % Compute RMT tilde defaults if not set
-            alpha_val = obj.indegree / obj.n;
-            % Default val D derived to give R=1: 1 = D * sqrt(n * alpha * (2 - alpha))
-            default_val = 1 / sqrt(obj.n * alpha_val * (2 - alpha_val));
+            % F = 1/sqrt(N*alpha*(2-alpha)), see parameter_table.md
+            F = obj.default_val;
 
-            if isempty(obj.mu_E_tilde),    obj.mu_E_tilde = 3*default_val;     end
-            if isempty(obj.mu_I_tilde),    obj.mu_I_tilde = -4*default_val;    end
-            if isempty(obj.sigma_E_tilde), obj.sigma_E_tilde = default_val;  end
-            if isempty(obj.sigma_I_tilde), obj.sigma_I_tilde = default_val;  end
-            1
+            if isempty(obj.mu_E_tilde),    obj.mu_E_tilde = 3*F;     end
+            if isempty(obj.mu_I_tilde),    obj.mu_I_tilde = -4*F;    end
+            if isempty(obj.sigma_E_tilde), obj.sigma_E_tilde = F;    end
+            if isempty(obj.sigma_I_tilde), obj.sigma_I_tilde = F;    end
+
             % Compute tau_a arrays if n_a > 0 but tau_a not set
             if obj.n_a_E > 0 && isempty(obj.tau_a_E)
                 obj.tau_a_E = logspace(log10(0.25), log10(10), obj.n_a_E);
@@ -248,7 +256,7 @@ classdef SRNNModel < handle
 
             % Create W matrix using RMTMatrix
             rmt = RMTMatrix(obj.n);
-            rmt.alpha = alpha_val;
+            rmt.alpha = obj.alpha;
             rmt.f = obj.f;
             rmt.mu_tilde_e = obj.mu_E_tilde + obj.E_W;   % Apply mean offset
             rmt.mu_tilde_i = obj.mu_I_tilde + obj.E_W;   % Apply mean offset
