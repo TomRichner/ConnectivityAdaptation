@@ -10,17 +10,10 @@
 %   - Connection density = 1 (fully connected, alpha = 1)
 %   - No external stimulus, random initial conditions
 %
-% Reference: Sompolinsky, H., Crisanti, A., & Sommers, H. J. (1988).
-%   Chaos in random neural networks. Physical Review Letters, 61(3), 259.
+% Reference: Sompolinsky, H., Crisanti, A. & Sommers, H. J. Chaos in Random Neural Networks. Phys. Rev. Lett. 61, 259–262 (1988).
 
 %% Setup
-
-% Add paths (assumes setup_paths.m has been run or paths are set)
-try
-    setup_paths;
-catch
-    warning('setup_paths not found. Assuming paths are already configured.');
-end
+setup_paths;
 
 % Figure saving configuration
 % Check for master override from run_all_figures.m
