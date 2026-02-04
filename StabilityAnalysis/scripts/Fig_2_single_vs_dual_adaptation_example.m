@@ -17,7 +17,17 @@ set(groot, 'DefaultAxesTitleFontWeight', 'normal');
 % NOTE: This script sets global MATLAB figure defaults that persist for the session.
 % Run `reset(groot)` afterward to restore factory defaults if needed.
 
-save_figs = false;
+% Check for master override from run_all_figures.m
+if exist('master_save_figs', 'var')
+    if strcmp(master_save_figs, 'save_all_figs')
+        save_figs = true;
+    elseif strcmp(master_save_figs, 'save_no_figs')
+        save_figs = false;
+    end
+end
+if ~exist('save_figs', 'var')
+    save_figs = false;  % Script default
+end
 save_workspace = false;
 
 level_of_chaos = 1.0; % gamma from somplinsky

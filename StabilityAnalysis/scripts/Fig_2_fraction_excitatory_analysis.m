@@ -19,7 +19,17 @@
 % close all;  % Commented out for master script compatibility
 
 %% Configuration
-save_figs = false;
+% Check for master override from run_all_figures.m
+if exist('master_save_figs', 'var')
+    if strcmp(master_save_figs, 'save_all_figs')
+        save_figs = true;
+    elseif strcmp(master_save_figs, 'save_no_figs')
+        save_figs = false;
+    end
+end
+if ~exist('save_figs', 'var')
+    save_figs = false;  % Script default
+end
 
 %% Setup paths
 % setup_paths();  % Commented out - called by master script
