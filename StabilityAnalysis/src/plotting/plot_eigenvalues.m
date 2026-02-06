@@ -17,7 +17,8 @@ function ax = plot_eigenvalues(eigenvalues, ax, time_value, x_lim, y_lim, circle
 %   time_value  - Time value to display in title (in seconds)
 %   x_lim       - (Optional) [xmin xmax] limits for x-axis
 %   y_lim       - (Optional) [ymin ymax] limits for y-axis
-%   circle_params - (Optional) struct with fields 'center' and 'radius'
+%   circle_params - (Optional) struct with fields 'center', 'radius', and
+%                   optionally 'outlier_threshold' (default 1.04)
 %
 % Outputs:
 %   ax - Axes handle (returned for convenience)
@@ -44,33 +45,52 @@ end
 % Make the specified axes current
 axes(ax);
 
-% Identify outliers if circle parameters are provided
-is_outlier = false(size(eigenvalues));
-if ~isempty(circle_params) && isfield(circle_params, 'center') && isfield(circle_params, 'radius')
-    dists = abs(eigenvalues - circle_params.center);
-    is_outlier = dists > circle_params.radius;
-end
-
-% Scatter plot of eigenvalues
+% Classify and plot eigenvalues using three-tier outlier coloring similar to RMT.plot_spectrum
+mSize = 4;
 hold on;
-% Plot non-outliers (standard style: unfilled black circles)
-if any(~is_outlier)
-    scatter(real(eigenvalues(~is_outlier)), imag(eigenvalues(~is_outlier)), 36, ...
-        'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', 'none', 'LineWidth', 0.5);
-end
 
-% Plot outliers (new style: black x)
-if any(is_outlier)
-    scatter(real(eigenvalues(is_outlier)), imag(eigenvalues(is_outlier)), 36, ...
-        'MarkerEdgeColor', [0 0 0], 'Marker', 'x', 'LineWidth', 1.0);
-end
+has_circle = ~isempty(circle_params) && isfield(circle_params, 'center') && isfield(circle_params, 'radius');
 
-% Draw theoretical circle if provided
-if ~isempty(circle_params) && isfield(circle_params, 'center') && isfield(circle_params, 'radius')
+if has_circle
+    R = circle_params.radius;
+    xc = real(circle_params.center);
+    yc = imag(circle_params.center);
+
+    % Read outlier_threshold with default for backward compatibility
+    if isfield(circle_params, 'outlier_threshold')
+        outlier_threshold = circle_params.outlier_threshold;
+    else
+        outlier_threshold = 1.04;
+    end
+
+    % Compute distances from center for all eigenvalues
+    distances = abs(eigenvalues - circle_params.center);
+
+    % Interior eigenvalues (within R): black unfilled circles
+    interior_mask = distances <= R;
+    interior_eigs = eigenvalues(interior_mask);
+    plot(real(interior_eigs), imag(interior_eigs), 'ko', 'MarkerSize', mSize, 'MarkerFaceColor', 'none', 'LineWidth', 0.5);
+
+    % Near outlier eigenvalues (between R and outlier_threshold*R): black Xs
+    near_outlier_mask = (distances > R) & (distances <= outlier_threshold * R);
+    near_outlier_eigs = eigenvalues(near_outlier_mask);
+    if ~isempty(near_outlier_eigs)
+        plot(real(near_outlier_eigs), imag(near_outlier_eigs), 'kx', 'MarkerSize', mSize, 'LineWidth', 0.5);
+    end
+
+    % Far outlier eigenvalues (beyond outlier_threshold*R): green filled circles
+    far_outlier_mask = distances > outlier_threshold * R;
+    far_outlier_eigs = eigenvalues(far_outlier_mask);
+    if ~isempty(far_outlier_eigs)
+        plot(real(far_outlier_eigs), imag(far_outlier_eigs), 'o', 'MarkerSize', mSize, 'MarkerFaceColor', [0 .7 0], 'MarkerEdgeColor', [0 .7 0]);
+    end
+
+    % Draw theoretical radius as solid black circle
     theta = linspace(0, 2*pi, 100);
-    x_circ = real(circle_params.center) + circle_params.radius * cos(theta);
-    y_circ = imag(circle_params.center) + circle_params.radius * sin(theta);
-    plot(x_circ, y_circ, 'k--', 'LineWidth', 1.0);
+    plot(xc + R*cos(theta), yc + R*sin(theta), 'k-', 'LineWidth', 2);
+else
+    % No circle params: plot all eigenvalues as black unfilled circles
+    plot(real(eigenvalues), imag(eigenvalues), 'ko', 'MarkerSize', mSize, 'MarkerFaceColor', 'none', 'LineWidth', 0.5);
 end
 
 % Get axis limits (use auto-scaled if not provided)

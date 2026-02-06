@@ -261,8 +261,8 @@ plot_J_eff_colorbar_fig();
 %% Plot Combined
 [fig_handle, ~] = plot_SRNN_combined_tseries(combined_runs, 3, {'u_ex', 'x', 'br', 'a', 'b', 'lya'});
 
-% Add letters to subplots
-AddLetters2Plots(fig_handle, {'(a)', '(b)', '(c)', '(d)', '(e)', '(f)'}, 'FontSize', 16, 'FontWeight', 'normal', 'HShift', -0.06, 'VShift', -0.02);
+% Don't add letters to subplots for this manuscript.  They will be added in Affinity by hand for better alignment.
+% AddLetters2Plots(fig_handle, {'(D)', '(E)', '(F)', '(G)', '(H)', '(I)'}, 'FontSize', 12, 'FontWeight', 'normal', 'HShift', -0.06, 'VShift', -0.02);
 
 ylim([-1.9 1.9]) % y limits of the local lyapunov exponent
 
@@ -512,7 +512,7 @@ eig_sets = [{eigs_static}; eigenvalues_J];
 % Theoretical circle for static eigenvalues
 circle_center = -1 / model.tau_d;
 circle_radius = model.R / model.tau_d;
-circle_params = struct('center', circle_center, 'radius', circle_radius);
+circle_params = struct('center', circle_center, 'radius', circle_radius, 'outlier_threshold', 1.04);
 
 % Return struct
 eig_data.eig_sets = eig_sets;
