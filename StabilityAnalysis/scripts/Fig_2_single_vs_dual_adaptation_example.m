@@ -220,21 +220,27 @@ eig_data_1 = compute_eigenvalue_sets(model1, params_1, time_config);
 eig_data_4 = compute_eigenvalue_sets(model2, params_4, time_config);
 
 % Define which subplots share common axis limits
-% Group 1: static W eigenvalues (subplot 1) — independent limits
-% Group 2: Jacobian eigenvalues (subplots 2-3) — shared limits across runs
-common_lim_group = [1, 2, 2];
+% Group -1: omitted from plotting (static W eigenvalues)
+% Group 2: Jacobian eigenvalues (subplots 1-2) — shared limits across runs
+common_lim_group = [-1, 2, 2];
 padding_factor = 0.05;
 
 % Compute axis limits across both runs
 [xlims, ylims] = compute_grouped_axis_limits({eig_data_1, eig_data_4}, ...
     common_lim_group, padding_factor);
 
+% Static W eigenvalue spectrum: plot only subplot 1, skip Jacobian subplots
+common_lim_group_static = [1, -1, -1];
+[xlims_static, ylims_static] = compute_grouped_axis_limits( ...
+    {eig_data_1, eig_data_4}, common_lim_group_static, padding_factor);
+
 %% ==================== PHASE 3: PLOTTING ====================
 
 %% Plot Run 1: SFA only
 model1.plot();
 
-plot_jacobian_eigenvalues_fig(model1, params_1, time_config, eig_data_1, xlims, ylims);
+plot_jacobian_eigenvalues_fig(model1, params_1, time_config, eig_data_1, xlims, ylims, common_lim_group);
+plot_jacobian_eigenvalues_fig(model1, params_1, time_config, eig_data_1, xlims_static, ylims_static, common_lim_group_static);
 plot_W_matrix_fig(model1);
 plot_weight_histogram_fig(model1, params_1);
 plot_J_eff_matrices_fig(model1, S_out_1, t_out_1, params_1, time_config);
@@ -244,7 +250,8 @@ plot_J_eff_colorbar_fig();
 %% Plot Run 2: SFA + STD
 model2.plot();
 
-plot_jacobian_eigenvalues_fig(model2, params_4, time_config, eig_data_4, xlims, ylims);
+plot_jacobian_eigenvalues_fig(model2, params_4, time_config, eig_data_4, xlims, ylims, common_lim_group);
+plot_jacobian_eigenvalues_fig(model2, params_4, time_config, eig_data_4, xlims_static, ylims_static, common_lim_group_static);
 plot_W_matrix_fig(model2);
 plot_weight_histogram_fig(model2, params_4);
 plot_J_eff_matrices_fig(model2, S_out_4, t_out_4, params_4, time_config);
@@ -271,42 +278,48 @@ end
 
 %% ==================== LOCAL FUNCTIONS ====================
 
-function plot_jacobian_eigenvalues_fig(model, params, time_config, eig_data, xlims, ylims)
+function plot_jacobian_eigenvalues_fig(model, params, time_config, eig_data, xlims, ylims, common_lim_group)
 %PLOT_JACOBIAN_EIGENVALUES_FIG Plot pre-computed Jacobian eigenvalues at sample times
+%   Entries in common_lim_group with value -1 are omitted from the figure.
 
 t_out = model.t_out;
 J_times = eig_data.J_times;
 eig_sets = eig_data.eig_sets;
 circle_params = eig_data.circle_params;
 
-n_J_plots = length(J_times);
-n_total_plots = length(eig_sets);
-if n_total_plots <= 4
+% Determine which eig_sets to plot (skip group == -1)
+plot_mask = (common_lim_group ~= -1);
+plot_indices = find(plot_mask);
+n_plot = length(plot_indices);
+
+if n_plot <= 4
     n_rows = 1;
-    n_cols = n_total_plots;
+    n_cols = n_plot;
 else
-    n_cols = ceil(sqrt(n_total_plots));
-    n_rows = ceil(n_total_plots / n_cols);
+    n_cols = ceil(sqrt(n_plot));
+    n_rows = ceil(n_plot / n_cols);
 end
 
-figure('Position', [1312, 526, 1100, 600]);
-ax_handles = zeros(n_total_plots, 1);
+fh = figure;
+ax_handles = zeros(n_plot, 1);
 
-% Subplot 1: eigenspectra of static I-W
-ax_handles(1) = subplot(n_rows, n_cols, 1);
-ax_handles(1) = plot_eigenvalues(eig_sets{1}, ax_handles(1), 0, xlims(1,:), ylims(1,:), circle_params);
-set(ax_handles(1), 'Color', 'none');
-
-% Subplots 2+: Jacobian eigenvalues at each time point
-for i_plot = 1+(1:n_J_plots)
-    ax_handles(i_plot) = subplot(n_rows, n_cols, i_plot);
-    evals = eig_sets{i_plot};
-    time_val = t_out(J_times(i_plot-1));
-    ax_handles(i_plot) = plot_eigenvalues(evals, ax_handles(i_plot), time_val, xlims(i_plot,:), ylims(i_plot,:));
-    set(ax_handles(i_plot), 'Color', 'none');
+for k = 1:n_plot
+    idx = plot_indices(k);
+    ax_handles(k) = subplot(n_rows, n_cols, k);
+    if idx == 1
+        % Static eigenvalues of (1/tau_d)*(W - I) — pass circle_params
+        ax_handles(k) = plot_eigenvalues(eig_sets{1}, ax_handles(k), 0, xlims(1,:), ylims(1,:), circle_params);
+    else
+        % Jacobian eigenvalues at sampled time point
+        time_val = t_out(J_times(idx - 1));
+        ax_handles(k) = plot_eigenvalues(eig_sets{idx}, ax_handles(k), time_val, xlims(idx,:), ylims(idx,:));
+    end
+    set(ax_handles(k), 'Color', 'none');
 end
 
 linkaxes(ax_handles, 'xy');
+drawnow
+set(fh,'Position',[100, 100, 360*n_plot, 360])
 end
 
 function plot_W_matrix_fig(model)
@@ -531,6 +544,9 @@ ylims = zeros(n_subplots, 2);
 
 for g = 1:length(unique_groups)
     gid = unique_groups(g);
+    if gid == -1
+        continue;  % skip omitted subplots
+    end
     subplot_mask = (common_lim_group == gid);
 
     % Collect all eigenvalues across all runs for subplots in this group
