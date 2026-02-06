@@ -9,7 +9,7 @@ setup_paths();
 
 %% Create and configure model with dual adaptation
 model = SRNNModel();
-ca
+
 % Enable dual adaptation: SFA (spike-frequency adaptation) + STD (short-term depression)
 model.n_a_E = 3;   % 3 adaptation timescales for excitatory neurons (SFA)
 model.n_b_E = 1;   % 1 STD timescale for excitatory neurons (STD)
