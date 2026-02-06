@@ -58,7 +58,7 @@ classdef SRNNModel < handle
         activation_function         % Activation function handle
         activation_function_derivative  % Derivative of activation function
         S_a = 0.9                   % Activation function parameter a
-        S_c = 0.35                  % Activation function parameter c (center)
+        S_c = 0.4                  % Activation function parameter c (center)
     end
 
     %% Simulation Settings Properties
