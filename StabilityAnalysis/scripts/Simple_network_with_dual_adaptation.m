@@ -7,7 +7,7 @@
 %% Setup paths
 setup_paths();
 
-%% Create and configure model with dual adaptation
+%% Create and configure model with dual adaptaon
 model = SRNNModel();
 
 % Enable dual adaptation: SFA (spike-frequency adaptation) + STD (short-term depression)
