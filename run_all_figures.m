@@ -46,7 +46,7 @@ fprintf('Review the figure(s), then press any key to continue...\n');
 pause;
 close all;
 
-%% Figure 2a-w: Single vs Dual Adaptation Comparison
+%% Figure 2A-F: Single vs Dual Adaptation Comparison
 fprintf('\n=== Running Figure 2a-w: Single vs Dual Adaptation ===\n');
 fprintf('This compares SFA-only vs SFA+STD adaptation dynamics.\n\n');
 
@@ -57,7 +57,7 @@ fprintf('Review the figure(s), then press any key to continue...\n');
 pause;
 close all;
 
-%% Figure 2x-zz: Fraction Excitatory Analysis
+%% Figure 2G: Fraction Excitatory Analysis
 % NOTE: Parallel Computing Toolbox is recommended but not required.
 %       If unavailable, execution will fallback to serial processing.
 %       Approximate runtime: ~25 minutes without parallel computing.
@@ -75,6 +75,7 @@ pause;
 close all;
 
 %% Sompolinsky Chaos Demos
+% Running Sompolinsky 1988 examples as a special case of our class SRNNModel.m with adaptation turned off and phi(x) = tanh(x)
 % Comparing network size and gain effects on dynamics:
 %   - N = 200, g = 1.8: Produces a LIMIT CYCLE (finite-size effects dominate)
 %   - N = 200, g = 2.1: Produces CHAOS (higher gain overcomes finite-size effects)

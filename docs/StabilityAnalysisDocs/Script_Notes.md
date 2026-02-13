@@ -1,12 +1,40 @@
-# Script Notes: Figure 2 Generation
+# Script Notes: Figure Generation
 
-This document explains how to run the scripts used to generate Figure 2 in the manuscript.
+This document explains how to run the scripts used to generate figures in the manuscript.
+
+---
+
+## Main Script
+
+**File:** [run_all_figures.m](../../run_all_figures.m)
+
+**Purpose:** Master script that sequentially runs all figure-generation scripts for the manuscript. It sets up paths once, then executes each script in order, pausing between scripts so you can review the generated figures.
+
+**Master Configuration:**
+
+| Variable | Default | Options |
+|----------|---------|---------|
+| `master_save_figs` | `'save_no_figs'` | `'save_all_figs'` – Override all scripts to save figures |
+| | | `'save_no_figs'` – Override all scripts to NOT save figures |
+| | | `'follow_scripts_save_figs'` – Let each script use its own `save_figs` setting |
+
+**Execution Order:**
+
+1. `Simple_network_with_dual_adaptation.m` – Simple SRNN with SFA + STD demo
+2. `Fig_1_RMT_examples.m` – Random Matrix Theory eigenvalue spectra (Figure 1)
+3. `Fig_2_single_vs_dual_adaptation_example.m` – SFA vs SFA+STD comparison (Figure 2a–f)
+4. `Fig_2_fraction_excitatory_analysis.m` – E:I ratio sensitivity analysis (Figure 2g+)
+5. `Sompolinsky_N_200_g_1p8.m` – Sompolinsky 1988, N=200, g=1.8 (limit cycle)
+6. `Sompolinsky_N_200_g_2p1.m` – Sompolinsky 1988, N=200, g=2.1 (chaos)
+7. `Sompolinsky_N_1000_g_1p8.m` – Sompolinsky 1988, N=1000, g=1.8 (chaos)
+
+> **Tip:** You can also run any individual script standalone — each calls `setup_paths()` automatically.
 
 ---
 
 ## Prerequisites
 
-Before running any script in this directory, you **must** call [setup_paths.m](../../StabilityAnalysis/scripts/setup_paths.m) to add the `src/` directory to the MATLAB path:
+Before running any script individually (outside of `run_all_figures.m`), you **must** call [setup_paths.m](../../StabilityAnalysis/scripts/setup_paths.m) to add the `src/` directory to the MATLAB path:
 
 ```matlab
 setup_paths();
@@ -17,7 +45,17 @@ This function:
 - Adds `src/` (and all subdirectories) to the MATLAB path
 - Errors if the `src/` directory is not found
 
-> **Note:** Each Figure 2 script calls `setup_paths()` automatically at the start, so you only need to call it manually if running individual functions interactively.
+> **Note:** Each figure script calls `setup_paths()` automatically at the start, so you only need to call it manually if running individual functions interactively.
+
+---
+
+## Figure 1 Script
+
+### RMT Examples
+
+**File:** [Fig_1_RMT_examples.m](../../RandomMatrixTheory/Fig_1_RMT_examples.m)
+
+**Purpose:** Generates eigenvalue spectra for various random matrix configurations (Figure 1).
 
 ---
 
@@ -95,14 +133,28 @@ figs/fraction_excitatory_analysis/
 
 ---
 
+## Sompolinsky Chaos Demo Scripts
+
+These scripts reproduce the Sompolinsky (1988) dynamics as a special case of `SRNNModel.m` (adaptation off, $\phi$(x) = tanh(x)), demonstrating the effect of network size and gain on dynamics:
+
+| Script | N | g | Expected Dynamics | Notes |
+|--------|---|---|-------------------|-------|
+| `Sompolinsky_N_200_g_1p8.m` | 200 | 1.8 | Limit cycle | Finite-size effects dominate |
+| `Sompolinsky_N_200_g_2p1.m` | 200 | 2.1 | Chaos | Higher gain overcomes finite-size effects |
+| `Sompolinsky_N_1000_g_1p8.m` | 1000 | 1.8 | Chaos | Approaches infinite-N thermodynamic limit |
+
+---
+
 ## Configuration Options
 
-Both scripts have configuration flags at the top:
+Both Figure 2 scripts have configuration flags at the top:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `save_figs` | `true` / `false` | Whether to save figures to disk |
-| `save_workspace` | `false` | Whether to save full workspace (very large files -- only needed for e.g. debug) |
+| `save_workspace` | `false` | Whether to save full workspace (very large files — only needed for e.g. debug) |
+
+> **Note:** When using `run_all_figures.m`, the `master_save_figs` setting can override individual script `save_figs` values.
 
 ---
 

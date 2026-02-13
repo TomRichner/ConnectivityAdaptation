@@ -1,0 +1,48 @@
+\documentclass[11pt]{article}
+
+% --- Packages ---
+\usepackage[left=0.5in, right=0.5in, top=1in, bottom=1in]{geometry}
+\usepackage{booktabs}       % Professional table rules
+\usepackage{amsmath}         % Math environments
+\usepackage{amssymb}         % Additional math symbols
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}         % Latin Modern font
+
+% Remove page number for a standalone supplementary table
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\large\bfseries Supplementary Table 1}
+\end{center}
+
+\medskip
+\noindent
+Paired comparison of local largest Lyapunov exponent (LLE) during stimulation vs.\ no-stimulation periods across adaptation conditions.
+
+\bigskip
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l c r r r r r}
+\toprule
+Condition & Networks & Wilcoxon $p$ & Cohen's $d$ & Median $\Delta$LLE & Mean Stim LLE & Mean No-Stim LLE \\
+\midrule
+No Adaptation & 25 & 0.035\rlap{*}  &  0.41 &  0.46 &  0.52 & 0.25 \\
+SFA Only       & 25 & 0.001\rlap{*}  &  0.80 &  0.38 &  0.41 & 0.14 \\
+STD Only       & 25 & 0.313   & $-$0.21 & $-$0.08 & $-$0.13 & 0.00 \\
+SFA + STD      & 25 & 0.476   & $-$0.25 &  0.04 & $-$0.02 & 0.03 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\smallskip
+\noindent
+\textit{Note.}\ $N = 300$ neurons per network, connection density = 33\%, $f \in [0.40,\, 0.60]$.
+Wilcoxon signed-rank test (two-tailed) compared mean local LLE during stimulation
+versus no-stimulation periods.
+$\Delta$LLE = LLE$_{\text{stim}}$ $-$ LLE$_{\text{no-stim}}$.\\[2pt]
+* $p < .05$.
+
+\end{document}

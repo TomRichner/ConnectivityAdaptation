@@ -42,7 +42,7 @@ $$
 | **Connection Weight parameters** |||||
 | $W$ | Connection matrix | — | — | $N \times N$ sparse weight matrix |
 | $N$ | Network size | 300 | — | Total number of neurons |
-| $f$ | Fraction excitatory | $\frac{1}{2}$ or (0.4–0.6) | — | Fraction of excitatory neurons, remainder are inhibitory; systematically varied from 0.4 to 0.6 to produce figure 2 x-zz |
+| $f$ | Fraction excitatory | $\frac{1}{2}$ or (0.4–0.6) | — | Fraction of excitatory neurons, remainder are inhibitory; systematically varied from 0.4 to 0.6 to produce Figure 2G |
 | $S$ | Sparsity mask | — | — | Binary mask, $S_{ij} \sim \text{Bernoulli}(\alpha)$ |
 | $\alpha$ | Connection probability | $\frac{1}{3}$ | — | $\alpha = \text{indegree}/N = 100/300$ |
 | $F$ | Default scaling factor | $\frac{1}{\sqrt{N\alpha(2-\alpha)}}$ | — | Scaling factor which yields $R=1$ if $\tilde{\mu}_E, \tilde{\mu}_I, \tilde{\sigma}_E, \text{ and } \tilde{\sigma}_I$ are equal (see derivation below). |
@@ -83,6 +83,8 @@ $$
 ---
 
 ## Definition of the Activation Function $\phi(x)$
+
+![Hard sigmoid with rounded corners](hard_sigmoid_rounded_corners.png)
 
 The activation function $\phi(x)$ is a **hard sigmoid with rounded corners**—a piecewise function composed of five regions that smoothly transitions between saturation at 0 and 1.
 

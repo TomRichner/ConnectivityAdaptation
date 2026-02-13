@@ -119,7 +119,7 @@ The final matrix is $W = (S \circ AD - B_{partial}) + (S \circ M)$. This critica
 | `zrs_mode` | - | Public | ZRS mode: `'none'`, `'ZRS'`, `'SZRS'`, or `'Partial_SZRS'` |
 | `shift` | - | Public | Scalar diagonal shift for eigenvalues |
 | `description` | - | Public | Text description for labeling |
-| `outlier_threshold` | - | Public | Multiplier for $\mathcal{R}$ to determine outlier eigenvalues (default 1.04) |
+| `outlier_threshold` | - | Public | Multiplier for $\mathcal{R}$ to determine far outlier eigenvalues (default 1.04) |
 | `E` | $\mathcal{E}$ | Dependent | Logical index for excitatory neurons |
 | `I` | $\mathcal{I}$ | Dependent | Logical index for inhibitory neurons |
 | `u` | $\mathbf{u}$ | Dependent | Left vector for low-rank structure: $\mathbf{u} = \text{ones}(N,1)$ (Eq. 12) |
@@ -149,13 +149,32 @@ The final matrix is $W = (S \circ AD - B_{partial}) + (S \circ M)$. This critica
 
 - `RMT(N)`: Creates an RMT object with system size `N`. Initializes with default values: `alpha=1` (dense), `f=0.5`, zero means, and unit variance scaled by $1/\sqrt{N}$.
 
-### Parameter Setters
+### Property Setter Overloads (Cache Invalidation)
+
+The class uses MATLAB `set.*` property overloads on its public properties to automatically invalidate a cached eigenvalue computation whenever any parameter that affects the weight matrix `W` is changed. This ensures that subsequent calls to `get_eigenvalues()` trigger a fresh `eig(W)` rather than returning stale results.
+
+The following properties have setter overloads that call `invalidate_eigenvalues()`:
+
+| Setter | Additional Side-Effect |
+|--------|----------------------|
+| `set.alpha` | Also calls `update_sparsity()` (regenerates `S`) if `A` already exists |
+| `set.f` | — |
+| `set.mu_tilde_e` | — |
+| `set.mu_tilde_i` | — |
+| `set.sigma_tilde_e` | — |
+| `set.sigma_tilde_i` | — |
+| `set.zrs_mode` | — |
+| `set.shift` | — |
+
+Because these are MATLAB property setters (not ordinary methods), cache invalidation happens transparently regardless of how the property is assigned—whether directly (`obj.alpha = 0.5`) or via a convenience method like `set_params(...)`.
+
+### Convenience Setters
 
 - `set_params(mu_tilde_e, mu_tilde_i, sigma_tilde_e, sigma_tilde_i, f, alpha)`: Set all population parameters at once.
 
-- `set_alpha(alpha)`: Set sparsity independently. Automatically regenerates the sparsity mask `S`.
+- `set_alpha(alpha)`: Set sparsity independently. Triggers the `set.alpha` overload, which regenerates the sparsity mask `S`.
 
-- `set_zrs_mode(mode)`: Set the ZRS mode. Valid options: `'none'`, `'ZRS'`, `'SZRS'`, `'Partial_SZRS'`.
+- `set_zrs_mode(mode)`: Set the ZRS mode with input validation. Valid options: `'none'`, `'ZRS'`, `'SZRS'`, `'Partial_SZRS'`.
 
 ### Computation Methods
 
@@ -201,6 +220,25 @@ The script `Fig_1_RMT_examples.m` demonstrates various configurations of the `RM
 5. **(e) Dense unbalanced Dale's different sigmas ZRS**: Demonstrates using `compute_sigma_tilde_i_for_target_variance` to set different standard deviations for E and I populations while maintaining a target total variance.
 
 6. **(f) Sparse unbalanced with Partial SZRS**: Introduces sparsity ($\alpha=0.5$) and applies Partial SZRS (Eq. 32) to control local outliers while preserving the E-I imbalance.
+
+### Parameter Inheritance Table
+
+Each example inherits all parameters from the previous example via `copy()`, then overrides specific values. **Bold** entries indicate parameters that were changed from the inherited (or initial) values; plain entries are inherited unchanged.
+
+| Parameter | (a) | (b) ← (a) | (c) ← (b) | (d) ← (c) | (e) ← (d) | (f) ← (e) |
+|-----------|-----|-----------|-----------|-----------|-----------|-----------|
+| $f$ | **1** | 1 | **0.5** | 0.5 | 0.5 | 0.5 |
+| $\alpha$ | **1** | 1 | 1 | 1 | 1 | **0.5** |
+| $\tilde{\mu}_e$ | **$E_W$** | **0** | **$1/\sqrt{N}$** | $1/\sqrt{N}$ | $1/\sqrt{N}$ | $1/\sqrt{N}$ |
+| $\tilde{\mu}_i$ | **$E_W$** | **0** | **$-1/\sqrt{N}$** | $-1/\sqrt{N}$ | $-1/\sqrt{N}$ | $-1/\sqrt{N}$ |
+| $\tilde{\sigma}_e$ | **$1/\sqrt{N}$** | $1/\sqrt{N}$ | $1/\sqrt{N}$ | $1/\sqrt{N}$ | **$0.35/\sqrt{N}$** | $0.35/\sqrt{N}$ |
+| $\tilde{\sigma}_i$ | **$1/\sqrt{N}$** | $1/\sqrt{N}$ | $1/\sqrt{N}$ | $1/\sqrt{N}$ | **$\dagger$** | $\dagger$ |
+| `zrs_mode` | **`none`** | `none` | `none` | **`ZRS`** | `ZRS` | **`Partial_SZRS`** |
+| `shift` | 0 | **$-\mathcal{R}$** | $-\mathcal{R}$ | $-\mathcal{R}$ | $-\mathcal{R}$ | $-\mathcal{R}$ |
+
+Where $E_W = 0.05/\sqrt{N}$ is a small positive mean offset applied to both populations to create a global outlier.
+
+$\dagger$ `sigma_tilde_i` in (e) is computed via `compute_sigma_tilde_i_for_target_variance(1/N)` to maintain total variance $\text{Var}(W) = 1/N$ given the reduced $\tilde{\sigma}_e = 0.35/\sqrt{N}$ (see Eq. 14, 16).
 
 ### Script Workflow
 
