@@ -1,0 +1,32 @@
+Generated: 25-Feb-2026 10:10:18
+
+=== Statistical Analysis: Stim vs No-Stim ===
+Data directory: /Users/richner.thomas/Desktop/local_code/ConnectivityAdaptation/StabilityAnalysis/data/param_space/param_space_test_reps_nLevs_5_feb_02_26_12_12
+Test: Wilcoxon signed-rank (paired, non-parametric)
+Transient skip: 3.00 s
+Step period: 15.00 s, No-stim pattern: [true, false, true]
+
+No Adaptation (n=25 pairs):
+  Wilcoxon signed-rank p-value: 0.03467
+  Cohen's d: 0.4125
+  Median LLE difference (stim - no-stim): 0.4566
+  Mean stim LLE: 0.5191, Mean no-stim LLE: 0.2472
+
+SFA Only (n=25 pairs):
+  Wilcoxon signed-rank p-value: 0.001186
+  Cohen's d: 0.7999
+  Median LLE difference (stim - no-stim): 0.3781
+  Mean stim LLE: 0.4148, Mean no-stim LLE: 0.1391
+
+STD Only (n=25 pairs):
+  Wilcoxon signed-rank p-value: 0.313
+  Cohen's d: -0.2050
+  Median LLE difference (stim - no-stim): -0.0847
+  Mean stim LLE: -0.1259, Mean no-stim LLE: -0.0020
+
+SFA + STD (n=25 pairs):
+  Wilcoxon signed-rank p-value: 0.4758
+  Cohen's d: -0.2489
+  Median LLE difference (stim - no-stim): 0.0357
+  Mean stim LLE: -0.0191, Mean no-stim LLE: 0.0295
+
