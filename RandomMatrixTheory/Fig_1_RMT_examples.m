@@ -160,6 +160,39 @@ AddLetters2Plots(num2cell(ax), letters, 'FontSize', 18, 'FontWeight', 'normal', 
 drawnow;
 set(f1, 'Position', [100   300   760   600]);
 
+%% Supplementary Figure 1: W matrices
+f2 = figure(2);
+set(f2, 'Color', 'white');
+t2 = tiledlayout(2, ceil(length(G)/2), 'TileSpacing', 'compact', 'Padding', 'compact');
+
+% Determine global clim from all W matrices
+all_max = 0;
+for i = 1:length(G)
+    W_i = full(G(i).rmt.W);
+    W_i(1:size(W_i,1)+1:end) = 0;  % Remove diagonal (may contain shift)
+    all_max = max(all_max, max(abs(W_i(:))));
+end
+clim_val = ceil(all_max * 10) / 10;  % Round up to nearest 0.1
+
+ax2 = gobjects(length(G), 1);
+for i = 1:length(G)
+    ax2(i) = nexttile;
+    W_plot = full(G(i).rmt.W);
+    imagesc(W_plot);
+    colormap(ax2(i), redwhiteblue_colormap(256));
+    clim([-clim_val, clim_val]);
+    axis square;
+    set(gca, 'XTick', [], 'YTick', []);
+    box off;
+    set(gca, 'Color', 'none');
+    set(gca, 'XColor', 'white', 'YColor', 'white', 'Layer', 'bottom');
+end
+
+AddLetters2Plots(num2cell(ax2), letters, 'FontSize', 18, 'FontWeight', 'normal', 'HShift', +0.01, 'VShift', +0.01);
+
+drawnow;
+set(f2, 'Position', [100, 100, 760, 600]);
+
 %% save figures
 
 if save_figs

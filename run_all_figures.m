@@ -1,5 +1,5 @@
 % run_all_figures.m
-% Master script to reproduce Figures 1 and 2 from the manuscript
+% Master script to reproduce Figures 1, 2, and Supplementary Figures from the manuscript
 %
 % This script sequentially runs:
 %   1. Fig_1_RMT_examples.m - Random Matrix Theory examples (Figure 1)
@@ -45,6 +45,9 @@ fprintf('\n--- Figure 1 complete ---\n');
 fprintf('Review the figure(s), then press any key to continue...\n');
 pause;
 close all;
+
+
+
 
 %% Figure 2A-F: Single vs Dual Adaptation Comparison
 fprintf('\n=== Running Figure 2a-w: Single vs Dual Adaptation ===\n');
