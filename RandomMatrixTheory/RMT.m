@@ -447,6 +447,117 @@ classdef RMT < handle
             hold(ax, 'off');
         end
 
+        function plot_W(obj, ax, clim_val)
+            % Display W with a diverging red/white/blue colormap and a
+            % symmetric, optionally shared color range. The diagonal shift
+            % (if any) is rendered as-is and saturates at the clim extremes.
+            %
+            %   plot_W()             - new figure, auto clim from off-diagonal max
+            %   plot_W(ax)           - draw into ax, auto clim
+            %   plot_W(ax, clim_val) - draw into ax with shared clim
+            if nargin < 2 || isempty(ax)
+                figure; ax = gca;
+            end
+
+            W_plot = full(obj.W);
+
+            if nargin < 3 || isempty(clim_val)
+                W_no_diag = W_plot;
+                W_no_diag(1:obj.N+1:end) = 0;
+                clim_val = ceil(max(abs(W_no_diag(:))) * 10) / 10;
+                if clim_val == 0
+                    clim_val = 0.1;
+                end
+            end
+
+            imagesc(ax, W_plot);
+            colormap(ax, redwhiteblue_colormap(256));
+            clim(ax, [-clim_val, clim_val]);
+            axis(ax, 'square');
+            set(ax, 'XTick', [], 'YTick', []);
+            box(ax, 'off');
+            set(ax, 'Color', 'none', ...
+                    'XColor', 'white', 'YColor', 'white', 'Layer', 'bottom');
+        end
+
+        function plot_weight_histogram(obj, ax, bin_edges)
+            % Histogram of W entries. When Dale's law applies (f < 1), E and
+            % I populations are overlaid in red and blue with tildemu_E /
+            % tildemu_I markers below the x-axis. When f == 1, a single gray
+            % histogram is shown. Values outside the bin-edge range are
+            % clipped to the first/last bin so that diagonal-shift entries
+            % surface as edge spikes rather than vanishing.
+            %
+            %   plot_weight_histogram()              - new figure, auto bins
+            %   plot_weight_histogram(ax)            - draw into ax, auto bins
+            %   plot_weight_histogram(ax, bin_edges) - shared bins across panels
+            if nargin < 2 || isempty(ax)
+                figure; ax = gca;
+            end
+
+            W_full = full(obj.W);
+
+            if nargin < 3 || isempty(bin_edges)
+                r = max(abs(W_full(:)));
+                if r == 0, r = 1; end
+                bin_edges = linspace(-r, r, 51);
+            end
+
+            edge_lo = bin_edges(1);
+            edge_hi = bin_edges(end);
+
+            if obj.f < 1
+                W_E = W_full(:, obj.E);
+                W_I = W_full(:, obj.I);
+                W_E = W_E(W_E ~= 0);
+                W_I = W_I(W_I ~= 0);
+
+                W_E = min(max(W_E, edge_lo), edge_hi);
+                W_I = min(max(W_I, edge_lo), edge_hi);
+
+                hold(ax, 'on');
+                histogram(ax, W_E, bin_edges, ...
+                    'FaceColor', [0.8 0.2 0.2], 'EdgeColor', 'none', ...
+                    'FaceAlpha', 0.6);
+                histogram(ax, W_I, bin_edges, ...
+                    'FaceColor', [0.2 0.4 0.8], 'EdgeColor', 'none', ...
+                    'FaceAlpha', 0.6);
+                hold(ax, 'off');
+
+                legend(ax, 'E', 'I', 'Location', 'northeast');
+                legend(ax, 'boxoff');
+
+                % Markers point at the off-diagonal bulk, which is unaffected
+                % by obj.shift (shift only displaces diagonal entries, and those
+                % are absorbed into the first/last bin by the clipping above).
+                y_bottom = ax.YLim(1);
+                mu_E_pos = obj.mu_tilde_e;
+                mu_I_pos = obj.mu_tilde_i;
+                text(ax, mu_E_pos, y_bottom, '$\tilde{\mu}_E$', ...
+                    'Interpreter', 'latex', ...
+                    'HorizontalAlignment', 'center', ...
+                    'VerticalAlignment', 'top', 'FontSize', 10, ...
+                    'Clipping', 'on');
+                text(ax, mu_I_pos, y_bottom, '$\tilde{\mu}_I$', ...
+                    'Interpreter', 'latex', ...
+                    'HorizontalAlignment', 'center', ...
+                    'VerticalAlignment', 'top', 'FontSize', 10, ...
+                    'Clipping', 'on');
+            else
+                w = W_full(:);
+                w = w(w ~= 0);
+                w = min(max(w, edge_lo), edge_hi);
+                histogram(ax, w, bin_edges, ...
+                    'FaceColor', [0.5 0.5 0.5], 'EdgeColor', 'none', ...
+                    'FaceAlpha', 0.8);
+            end
+
+            xlabel(ax, 'Weight');
+            ylabel(ax, 'Count');
+            box(ax, 'off');
+            set(ax, 'Color', 'none');
+        end
+
         %% Deep Copy
         function new_obj = copy(obj)
             % Create new object with same N
