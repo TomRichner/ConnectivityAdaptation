@@ -480,7 +480,7 @@ classdef RMT < handle
                     'XColor', 'white', 'YColor', 'white', 'Layer', 'bottom');
         end
 
-        function plot_weight_histogram(obj, ax, bin_edges)
+        function plot_weight_histogram(obj, ax, bin_edges, show_legend, show_yaxis)
             % Histogram of W entries. When Dale's law applies (f < 1), E and
             % I populations are overlaid in red and blue with tildemu_E /
             % tildemu_I markers below the x-axis. When f == 1, a single gray
@@ -488,9 +488,11 @@ classdef RMT < handle
             % clipped to the first/last bin so that diagonal-shift entries
             % surface as edge spikes rather than vanishing.
             %
-            %   plot_weight_histogram()              - new figure, auto bins
-            %   plot_weight_histogram(ax)            - draw into ax, auto bins
-            %   plot_weight_histogram(ax, bin_edges) - shared bins across panels
+            %   plot_weight_histogram()                          - new figure, auto bins
+            %   plot_weight_histogram(ax)                        - draw into ax, auto bins
+            %   plot_weight_histogram(ax, bin_edges)             - shared bins across panels
+            %   plot_weight_histogram(ax, bin_edges, show_legend) - omit legend when false
+            %   plot_weight_histogram(ax, bin_edges, show_legend, show_yaxis) - hide y-axis (line/ticks/label) when false
             if nargin < 2 || isempty(ax)
                 figure; ax = gca;
             end
@@ -501,6 +503,14 @@ classdef RMT < handle
                 r = max(abs(W_full(:)));
                 if r == 0, r = 1; end
                 bin_edges = linspace(-r, r, 51);
+            end
+
+            if nargin < 4 || isempty(show_legend)
+                show_legend = true;
+            end
+
+            if nargin < 5 || isempty(show_yaxis)
+                show_yaxis = true;
             end
 
             edge_lo = bin_edges(1);
@@ -524,8 +534,10 @@ classdef RMT < handle
                     'FaceAlpha', 0.6);
                 hold(ax, 'off');
 
-                legend(ax, 'E', 'I', 'Location', 'northeast');
-                legend(ax, 'boxoff');
+                if show_legend
+                    legend(ax, 'E', 'I', 'Location', 'northeast');
+                    legend(ax, 'boxoff');
+                end
 
                 % Markers point at the off-diagonal bulk, which is unaffected
                 % by obj.shift (shift only displaces diagonal entries, and those
@@ -556,6 +568,10 @@ classdef RMT < handle
             ylabel(ax, 'Count');
             box(ax, 'off');
             set(ax, 'Color', 'none');
+
+            if ~show_yaxis
+                ax.YAxis.Visible = 'off';
+            end
         end
 
         %% Deep Copy

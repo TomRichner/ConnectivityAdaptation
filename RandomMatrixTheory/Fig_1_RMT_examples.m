@@ -86,7 +86,7 @@ G(g).rmt.display_parameters();
 
 %% Compute eigenvalues and make plots
 f1 = figure(1);
-set(f1, 'Position', [100   300   760   600], 'Color', 'white'); % note: Position isn't really obeyed when using daspect(ax(i), [1 1 1])
+set(f1, 'Position', [100, 300, 977, 727], 'Color', 'white'); % note: Position isn't really obeyed when using daspect(ax(i), [1 1 1])
 t = tiledlayout(2, ceil(length(G)/2), 'TileSpacing', 'tight', 'Padding', 'compact');
 
 ax = gobjects(length(G), 1); % will hold on to graphics handles
@@ -158,7 +158,7 @@ letters = arrayfun(@(c) sprintf('(%s)', c), 'a':'z', 'UniformOutput', false);
 AddLetters2Plots(num2cell(ax), letters, 'FontSize', 18, 'FontWeight', 'normal', 'HShift', +0.01, 'VShift', +0.01);
 
 drawnow;
-set(f1, 'Position', [100   300   760   600]);
+set(f1, 'Position', [100, 300, 977, 727]);
 
 %% Shared symmetric clim from off-diagonal weights (reused by Sup. Figs. 1 and 2)
 all_max = 0;
@@ -180,10 +180,11 @@ for i = 1:length(G)
     G(i).rmt.plot_W(ax2(i), clim_val);
 end
 
-AddLetters2Plots(num2cell(ax2), letters, 'FontSize', 18, 'FontWeight', 'normal', 'HShift', +0.01, 'VShift', +0.01);
+% Letters omitted: supplementary figure is overlaid on Fig. 1 manually in Affinity.
+% AddLetters2Plots(num2cell(ax2), letters, 'FontSize', 18, 'FontWeight', 'normal', 'HShift', +0.01, 'VShift', +0.01);
 
 drawnow;
-set(f2, 'Position', [100, 100, 760, 600]);
+set(f2, 'Position', [100, 100, 1241, 804]);
 
 %% Supplementary Figure 2: weight histograms (E/I split where Dale's law applies)
 f3 = figure(3);
@@ -193,16 +194,20 @@ t3 = tiledlayout(2, ceil(length(G)/2), 'TileSpacing', 'compact', 'Padding', 'com
 bin_edges = linspace(-clim_val, clim_val, 51);
 
 ax3 = gobjects(length(G), 1);
+n_cols = ceil(length(G)/2);
+legend_panel = n_cols;  % upper-rightmost tile in row 1
 for i = 1:length(G)
     ax3(i) = nexttile;
-    G(i).rmt.plot_weight_histogram(ax3(i), bin_edges);
-    xlim(ax3(i), [-clim_val, clim_val]);
+    G(i).rmt.plot_weight_histogram(ax3(i), bin_edges, i == legend_panel, false);
+    xlim(ax3(i), [-0.2, 0.2]);
+    xticks(ax3(i), [-0.1, 0, 0.1]);
 end
 
-AddLetters2Plots(num2cell(ax3), letters, 'FontSize', 18, 'FontWeight', 'normal', 'HShift', +0.01, 'VShift', +0.01);
+% Letters omitted: supplementary figure is overlaid on Fig. 1 manually in Affinity.
+% AddLetters2Plots(num2cell(ax3), letters, 'FontSize', 18, 'FontWeight', 'normal', 'HShift', +0.01, 'VShift', +0.01);
 
 drawnow;
-set(f3, 'Position', [100, 100, 760, 600]);
+set(f3, 'Position', [100, 100, 1021, 374]);
 
 %% save figures
 
