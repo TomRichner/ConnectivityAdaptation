@@ -18,7 +18,7 @@ end
 
 rng(100) % reproducibility
 
-N = 600; % number of neurons
+N = 50; % number of neurons
 
 G = struct(); % matlab structure to contain examples
 
@@ -80,6 +80,7 @@ G(g).rmt.display_parameters();
 g = g + 1;
 G(g).rmt = G(g-1).rmt.copy();
 G(g).rmt.set_alpha(0.5); % make the matrix 50% sparse
+% G(g).rmt.set_zrs_mode('Partial_SZRS'); % apply Partial SZRS.  Row zero sum is applied to S o AD, but not S o uv^T
 G(g).rmt.set_zrs_mode('Partial_SZRS'); % apply Partial SZRS.  Row zero sum is applied to S o AD, but not S o uv^T
 G(g).rmt.description = 'Sparse Unbalanced Dales Partial SZRS';
 G(g).rmt.display_parameters();
@@ -232,10 +233,10 @@ end
 % AddLetters2Plots(num2cell(ax4), letters, 'FontSize', 18, 'FontWeight', 'normal', 'HShift', +0.01, 'VShift', +0.01);
 
 drawnow;
-set(f4, 'Position', [100, 100, 1021, 374]);
+set(f4, 'Position', [568, 222, 116, 689]);
 
 %% save figures
 
 if save_figs
-    save_some_figs_to_folder_2('RMT_figs', 'RMT_examples', [], {'fig', 'svg', 'png', 'jp2'});
+    save_some_figs_to_folder_2('RMT_figs_small', 'RMT_examples_small', [], {'fig', 'svg', 'png', 'jp2'});
 end

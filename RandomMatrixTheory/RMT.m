@@ -574,6 +574,37 @@ classdef RMT < handle
             end
         end
 
+        function plot_row_sums(obj, ax, xlim_val)
+            % PLOT_ROW_SUMS Plot row sums of W as a vertical black trace
+            %   x = row sum (includes diagonal shift), y = row index (1 at top)
+            %
+            % Usage:
+            %   plot_row_sums()                - new figure, auto xlim from data
+            %   plot_row_sums(ax)              - draw into ax, auto xlim
+            %   plot_row_sums(ax, xlim_val)    - draw into ax, shared symmetric xlim
+            if nargin < 2 || isempty(ax)
+                figure;
+                ax = gca;
+            end
+
+            row_sums = full(sum(obj.W, 2));
+            row_idx = (1:obj.N)';
+
+            if nargin < 3 || isempty(xlim_val)
+                xlim_val = max(abs(row_sums)) * 1.1;
+                if xlim_val == 0
+                    xlim_val = 1;
+                end
+            end
+
+            plot(ax, row_sums, row_idx, 'k-', 'LineWidth', 1);
+            set(ax, 'YDir', 'reverse');
+            xlim(ax, [-xlim_val, xlim_val]);
+            ylim(ax, [1, obj.N]);
+            axis(ax, 'off');
+            set(ax, 'Color', 'none');
+        end
+
         %% Deep Copy
         function new_obj = copy(obj)
             % Create new object with same N
